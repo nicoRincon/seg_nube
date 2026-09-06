@@ -77,8 +77,18 @@ body > * { position: relative; z-index: 1; }
 a { color: var(--cyan); }
 
 /* ── HUD / top bar ── */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  padding: 0.9rem 1.2rem 0.5rem;
+  background: rgba(11, 11, 17, 0.82);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
 .hud {
-  margin: 1rem auto 0;
+  margin: 0 auto;
   max-width: 1180px;
   padding: 0.7rem 1.1rem;
   display: flex;

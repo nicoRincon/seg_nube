@@ -11,6 +11,7 @@
 <body>
 
 {% if g_started %}
+<div class="topbar">
 <header class="hud">
   <a href="{{ url_for('dashboard') }}" class="who">
     <span class="avatar">🧒</span>
@@ -35,6 +36,7 @@
     <a href="{{ url_for('set_level', level='high') }}"   class="{{ 'on-high'   if g_level=='high' }}">high</a>
   </span>
 </nav>
+</div>
 {% endif %}
 
 <div class="flash">

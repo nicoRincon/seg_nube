@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import challenge_header, briefing, hints, flag_form, detect_bar, nav_buttons %}
+{% block title %}La Cama de Papá Oso — Goldilocks CTF{% endblock %}
+
+{% block content %}
+<div class="wrap narrow">
+  {{ challenge_header(ch) }}
+  <p class="lead">"La cama de Papá Oso era muy dura: te devuelve todo lo que le dices, sin pensarlo."</p>
+
+  {{ detect_bar(g_detection) }}
+  {{ briefing(ch) }}
+
+  <div class="card" style="border-color:var(--yellow);box-shadow:0 0 20px rgba(253,224,71,0.22);">
+    <div class="card-title">🪞 Saludo del oso</div>
+    <form method="GET" action="{{ url_for('challenge_xss_reflected') }}">
+      <div class="field">
+        <label>Tu nombre</label>
+        <input type="text" name="nombre" value="{{ nombre }}"
+               placeholder='<script>alert(document.cookie)</script>' autocomplete="off">
+      </div>
+      <button class="btn btn-cyan" type="submit">Saludar</button>
+    </form>
+
+    <div style="margin-top:1rem;padding:1rem;border:1px dashed var(--line);border-radius:12px;">
+      <!-- ⚠ reflejo sin sanear (intencional) -->
+      Hola, {{ nombre | safe }}. Bienvenido a la casa.
+    </div>
+
+    <p style="margin-top:1rem;font-size:0.85rem;color:var(--text-dim);">
+      El servidor deja una cookie <code>bear_session</code> en tu navegador.
+      Está codificada en Base64. Léela con
+      <code>document.cookie</code> y decodifícala.
+    </p>
+    <div class="code-block">// en la consola del navegador (F12)
+atob(document.cookie.split('bear_session=')[1].split(';')[0])</div>
+  </div>
+
+  {{ hints(ch, hint_cost_min, hint_cost_pts) }}
+  {{ flag_form(ch, g_solved) }}
+
+  {{ nav_buttons(ch) }}
+</div>
+{% endblock %}

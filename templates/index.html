@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}Goldilocks CTF{% endblock %}
+
+{% block content %}
+<div class="landing">
+  <div class="box">
+    <div class="bear">🐻🐻🐻</div>
+    <h1 class="bigtitle" style="margin-top:0.4rem;">GOLDILOCKS CTF</h1>
+    <p class="subtitle" style="margin-bottom:1.6rem;">
+      Ricitos de Oro entró en la casa de los tres osos. Captura las 12 banderas
+      —Bosque, Casa y Habitaciones— antes de que regresen.
+    </p>
+
+    <form method="POST" action="{{ url_for('start') }}">
+      <div class="field" style="text-align:left;">
+        <label for="username">Nombre de jugador</label>
+        <input type="text" id="username" name="username"
+               placeholder="ricitos" autocomplete="off">
+      </div>
+      <button type="submit" class="btn btn-cyan btn-block" style="margin-top:0.4rem;">
+        ▶ Empezar partida (120:00)
+      </button>
+    </form>
+
+    <p style="font-size:0.8rem;color:var(--text-faint);margin-top:1.3rem;">
+      Se juega como <b>invitado</b>. 3 fases · 900 puntos ·
+      cada pista cuesta −5&nbsp;min y −25&nbsp;pts.
+    </p>
+  </div>
+</div>
+{% endblock %}

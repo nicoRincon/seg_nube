@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import challenge_header, briefing, hints, flag_form, detect_bar, nav_buttons %}
+{% block title %}La Sopa de Mamá Osa — Goldilocks CTF{% endblock %}
+
+{% block content %}
+<div class="wrap narrow">
+  {{ challenge_header(ch) }}
+  <p class="lead">"La sopa de Mamá Osa estaba demasiado fría… la dejó destapada a la vista de todos."</p>
+
+  {{ detect_bar(g_detection) }}
+  {{ briefing(ch) }}
+
+  <div class="card glow-green">
+    <div class="card-title">🔎 Buscador del bosque</div>
+    <p style="font-size:0.9rem;color:var(--text-dim);">
+      Empieza revisando qué rutas expone el servidor y luego abre el documento
+      que no debería ser público.
+    </p>
+    <div class="code-block">$ curl http://goldilocks.ctf/robots.txt
+$ curl http://goldilocks.ctf/static/docs/informe_seguridad_osos.txt</div>
+    <a href="{{ url_for('robots') }}" class="btn btn-ghost" target="_blank">Ver /robots.txt ↗</a>
+    <a href="{{ url_for('static', filename='docs/informe_seguridad_osos.txt') }}"
+       class="btn btn-outline" target="_blank">Abrir documento expuesto ↗</a>
+  </div>
+
+  {{ hints(ch, hint_cost_min, hint_cost_pts) }}
+  {{ flag_form(ch, g_solved) }}
+
+  {{ nav_buttons(ch) }}
+</div>
+{% endblock %}

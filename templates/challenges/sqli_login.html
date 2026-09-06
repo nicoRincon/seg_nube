@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import challenge_header, briefing, hints, flag_form, detect_bar, nav_buttons %}
+{% block title %}La Cama de Osito — Goldilocks CTF{% endblock %}
+
+{% block content %}
+<div class="wrap narrow">
+  {{ challenge_header(ch) }}
+  <p class="lead">"La cama de Osito era la más cómoda… pero la cerradura de su cuarto no comprueba nada."</p>
+
+  {{ detect_bar(g_detection) }}
+  {{ briefing(ch) }}
+
+  <div class="card glow-gold" style="border-color:var(--yellow);box-shadow:0 0 20px rgba(253,224,71,0.25);">
+    <div class="card-title">🔐 Acceso al cuarto de Osito</div>
+    <form method="POST" action="{{ url_for('challenge_sqli_login') }}">
+      <div class="field">
+        <label>Usuario</label>
+        <input type="text" name="username" placeholder="usuario" autocomplete="off">
+      </div>
+      <div class="field">
+        <label>Contraseña</label>
+        <input type="password" name="password" placeholder="••••••••">
+      </div>
+      <button class="btn btn-cyan" type="submit">Entrar</button>
+    </form>
+
+    {% if query %}
+      <p style="margin-top:1rem;font-size:0.8rem;color:var(--text-faint);">Consulta ejecutada:</p>
+      <div class="code-block">{{ query }}</div>
+    {% endif %}
+
+    {% if outcome %}
+      {% if outcome.ok %}
+        <div class="alert alert-success" style="margin-top:1rem;">
+          ✓ Autenticación saltada — sesión abierta como
+          <b>{{ outcome.user }}</b> ({{ outcome.role }}) sin contraseña válida.
+        </div>
+        <div class="flag-box">{{ outcome.flag }}</div>
+      {% else %}
+        <div class="alert alert-danger" style="margin-top:1rem;">{{ outcome.msg }}</div>
+      {% endif %}
+    {% endif %}
+  </div>
+
+  {{ hints(ch, hint_cost_min, hint_cost_pts) }}
+  {{ flag_form(ch, g_solved) }}
+
+  {{ nav_buttons(ch) }}
+</div>
+{% endblock %}

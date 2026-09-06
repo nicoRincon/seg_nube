@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import challenge_header, briefing, hints, flag_form, detect_bar, nav_buttons %}
+{% block title %}Osito Despierta — Goldilocks CTF{% endblock %}
+
+{% block content %}
+<div class="wrap narrow">
+  {{ challenge_header(ch) }}
+  <p class="lead">"Osito se sienta en la cama… Tu usuario es pequeño, pero hay una silla para llegar a lo alto."</p>
+
+  {{ detect_bar(g_detection) }}
+  {{ briefing(ch) }}
+
+  <div class="card">
+    <div class="card-title">🍪 Tu sesión actual</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Clave</th><th>Valor</th></tr></thead>
+        <tbody>
+          <tr><td>username</td><td><code>{{ g_username }}</code></td></tr>
+          <tr><td>role</td><td><code style="color:{{ 'var(--green-neon)' if is_admin else 'var(--orange)' }};">{{ g_role }}</code></td></tr>
+          <tr><td>level</td><td><code>{{ g_level }}</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {% if is_admin %}
+  <div class="card glow-green">
+    <div class="card-title">🔓 Habitación de los osos — acceso root</div>
+    <div class="alert alert-success">✓ Escalada de privilegios exitosa. Eres <b>admin/root</b>.</div>
+    <div class="code-block"># cat /root/flag.txt
+{{ admin_flag }}</div>
+  </div>
+  {% else %}
+  <div class="card glow-red">
+    <div class="card-title">🚫 /root/flag.txt — permiso denegado</div>
+    <p style="color:var(--text-dim);">
+      Tu rol es <code>{{ g_role }}</code>. Escala a <code>admin</code> para leer la bandera.
+    </p>
+    <div class="code-block">$ sudo -l
+$ find / -perm -4000 -type f 2>/dev/null
+# En esta plataforma: la cookie de sesión guarda 'role' sin cifrar.
+# F12 → Application → Cookies → role = admin        (nivel low)
+$ curl http://goldilocks.ctf/admin/config          # revela SECRET_KEY (nivel medium)</div>
+    <a href="{{ url_for('admin_config') }}" class="btn btn-ghost" target="_blank">Ver /admin/config ↗</a>
+  </div>
+  {% endif %}
+
+  {{ hints(ch, hint_cost_min, hint_cost_pts) }}
+  {{ flag_form(ch, g_solved) }}
+
+  {{ nav_buttons(ch) }}
+</div>
+{% endblock %}

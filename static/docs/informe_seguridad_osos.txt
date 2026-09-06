@@ -1,0 +1,8 @@
+INFORME INTERNO DE SEGURIDAD — CASA DE LOS TRES OSOS
+Clasificación: CONFIDENCIAL · No publicar
+----------------------------------------------------
+1. La cerradura de la puerta principal sigue siendo débil.
+2. La ventana de la cocina no cierra bien.
+3. Ricitos de Oro fue vista rondando el bosque.
+
+Token de auditoría: CTF{mama_bosque_dork_archivo_expuesto}

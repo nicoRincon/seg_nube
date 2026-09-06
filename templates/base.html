@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Goldilocks CTF{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+{% if g_started %}
+<header class="hud">
+  <a href="{{ url_for('dashboard') }}" class="who">
+    <span class="avatar">🧒</span>
+    {{ g_username }} <small>({{ 'invitado' if g_guest else g_role }})</small>
+  </a>
+  <button class="menu-btn" onclick="document.getElementById('dm').hidden = !document.getElementById('dm').hidden">☰</button>
+  <div class="timer" id="timer" data-remaining="{{ g_remaining }}">--:--</div>
+  <div class="score"><b id="score">{{ g_score }}</b> / {{ g_total_pts }} PTS</div>
+</header>
+
+<nav class="dropmenu" id="dm" hidden>
+  <a href="{{ url_for('dashboard') }}" class="{{ 'active' if request.endpoint=='dashboard' }}">Inicio</a>
+  <span class="sep">·</span>
+  <a href="{{ url_for('scoreboard') }}" class="{{ 'active' if request.endpoint=='scoreboard' }}">Marcador</a>
+  <span class="sep">·</span>
+  <a href="{{ url_for('reset') }}" onclick="return confirm('¿Reiniciar el escenario? Se pierde el progreso y el cronómetro vuelve a 120:00.')">Reiniciar</a>
+  <span class="sep">·</span>
+  <a href="{{ url_for('logout') }}">Salir</a>
+  <span class="lvl">
+    <a href="{{ url_for('set_level', level='low') }}"    class="{{ 'on-low'    if g_level=='low' }}">low</a>
+    <a href="{{ url_for('set_level', level='medium') }}" class="{{ 'on-medium' if g_level=='medium' }}">medium</a>
+    <a href="{{ url_for('set_level', level='high') }}"   class="{{ 'on-high'   if g_level=='high' }}">high</a>
+  </span>
+</nav>
+{% endif %}
+
+<div class="flash">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+      <div class="alert alert-{{ cat }}">{{ msg }}</div>
+    {% endfor %}
+  {% endwith %}
+</div>
+
+{% block content %}{% endblock %}
+
+<footer>
+  Goldilocks CTF &nbsp;·&nbsp; Universidad de Cundinamarca &nbsp;·&nbsp;
+  <b>⚠ Solo para uso educativo en entornos controlados</b>
+</footer>
+
+{% if g_started %}
+<script>
+(function () {
+  var el = document.getElementById('timer');
+  var scoreEl = document.getElementById('score');
+  var remaining = parseInt(el.dataset.remaining, 10) || 0;
+
+  function fmt(s) {
+    var m = Math.floor(s / 60), r = s % 60;
+    return String(m).padStart(2, '0') + ':' + String(r).padStart(2, '0');
+  }
+  function paint() {
+    el.textContent = fmt(remaining);
+    el.classList.toggle('warn', remaining <= 600 && remaining > 120);
+    el.classList.toggle('crit', remaining <= 120);
+  }
+  paint();
+
+  var tick = setInterval(function () {
+    remaining = Math.max(0, remaining - 1);
+    paint();
+    if (remaining === 0) { clearInterval(tick); window.location = "{{ url_for('lose') }}"; }
+  }, 1000);
+
+  // resync with server every 20s (covers hint penalties, other tabs)
+  setInterval(function () {
+    fetch("{{ url_for('state_json') }}", { cache: 'no-store' })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        remaining = d.remaining; paint();
+        if (scoreEl) scoreEl.textContent = d.score;
+        if (d.over) window.location = "{{ url_for('lose') }}";
+      }).catch(function () {});
+  }, 20000);
+})();
+</script>
+{% endif %}
+</body>
+</html>

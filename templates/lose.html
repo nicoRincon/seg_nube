@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}¡Los osos están cerca! — Goldilocks CTF{% endblock %}
+
+{% block content %}
+<div class="lose">
+  <div class="warns">
+    <span style="top:6%;left:4%;">⚠</span>
+    <span style="top:12%;left:12%;font-size:1.3rem;">❗</span>
+    <span style="top:4%;right:6%;">❗</span>
+    <span style="top:20%;right:3%;font-size:1.5rem;">⚡</span>
+    <span style="bottom:10%;left:3%;font-size:1.6rem;">⚠</span>
+    <span style="bottom:6%;right:8%;">⚡</span>
+    <span style="bottom:16%;right:14%;font-size:1.2rem;">❗</span>
+  </div>
+
+  <h1>¡LOS TRES OSOS ESTÁN CERCA!</h1>
+
+  <div class="lose-grid">
+    <div class="lose-panel">
+      <div class="detect" style="border:none;padding:0;background:none;">
+        <div class="lbl">Nivel detección de los osos</div>
+        <div class="meter"><i style="width:100%;"></i></div>
+        <div class="scale">
+          <span>Tranquilo</span>
+          <span>→ Cerca</span>
+          <span class="now">→ ¡EN LA PUERTA!</span>
+        </div>
+      </div>
+
+      <div class="alert-crit">
+        NIVEL DE ALERTA: <b>CRÍTICO</b><br>(PÉRDIDA INMINENTE)
+      </div>
+
+      <p style="color:var(--text-dim);">
+        Se acabó el tiempo o los osos te descubrieron.
+        Capturaste <b>{{ g_solved_n }}</b> de {{ g_total_ch }} banderas
+        · <b>{{ g_score }}</b> / {{ g_total_pts }} PTS.
+      </p>
+
+      <a href="{{ url_for('reset') }}" class="btn btn-outline btn-block"
+         style="margin-top:1.2rem;">Reiniciar escenario</a>
+    </div>
+
+    <div class="lose-panel" style="border-color:var(--line);box-shadow:none;">
+      <div class="card-title">🐻 Banderas capturadas</div>
+      {% if g_solved %}
+        <ul style="list-style:none;display:grid;gap:0.4rem;">
+          {% for ch in CHALLENGES if ch.id in g_solved %}
+            <li style="font-family:var(--font-mono);font-size:0.85rem;color:var(--green);">
+              ✓ {{ ch.name }}
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p style="color:var(--text-faint);font-style:italic;">Ninguna. Los osos volvieron demasiado pronto.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

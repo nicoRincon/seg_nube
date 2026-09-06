@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import challenge_header, briefing, hints, flag_form, detect_bar, nav_buttons %}
+{% block title %}La Sopa de Papá Oso — Goldilocks CTF{% endblock %}
+
+{% block content %}
+<div class="wrap narrow">
+  {{ challenge_header(ch) }}
+  <p class="lead">"La sopa de Papá Oso estaba demasiado caliente… la escondió en la despensa que nadie usa."</p>
+
+  {{ detect_bar(g_detection) }}
+  {{ briefing(ch) }}
+
+  <div class="card glow-green">
+    <div class="card-title">📁 Enumeración de directorios</div>
+    <p style="font-size:0.9rem;color:var(--text-dim);">
+      Ninguna página enlaza a la despensa. En Kali usarías:
+    </p>
+    <div class="code-block">$ dirb http://goldilocks.ctf/ /usr/share/wordlists/dirb/common.txt
+$ gobuster dir -u http://goldilocks.ctf/ -w /usr/share/wordlists/dirb/common.txt
+
+  ==> DIRECTORY: /despensa_secreta/  (Status: 200)</div>
+    <a href="{{ url_for('despensa_secreta') }}" class="btn btn-outline" target="_blank">
+      Abrir /despensa_secreta ↗
+    </a>
+  </div>
+
+  {{ hints(ch, hint_cost_min, hint_cost_pts) }}
+  {{ flag_form(ch, g_solved) }}
+
+  {{ nav_buttons(ch) }}
+</div>
+{% endblock %}

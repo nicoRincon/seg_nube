@@ -1,0 +1,117 @@
+{# ─────────────── Reusable challenge components ─────────────── #}
+
+{% macro challenge_header(ch) %}
+  {% set colors = {1:'green', 2:'gold', 3:'red'} %}
+  {% set pnames = {1:'El Bosque', 2:'La Casa', 3:'Las Habitaciones'} %}
+  <div class="eyebrow">Fase {{ ch.phase }} · {{ pnames[ch.phase] }} — {{ ch.category }}</div>
+  <h1 class="page phase-{{ colors[ch.phase] }}">{{ ch.icon }} {{ ch.name }}</h1>
+{% endmacro %}
+
+
+{% macro briefing(ch) %}
+  <div class="card glow-{{ {1:'green',2:'cyan',3:'red'}[ch.phase] }}">
+    <div class="card-title">📜 Misión</div>
+    <p>{{ ch.brief | safe }}</p>
+    <hr>
+    <p style="font-size:0.85rem;color:var(--text-faint);">
+      Formato de bandera: <code>CTF{...}</code> &nbsp;·&nbsp; Vale {{ ch.pts }} PTS
+    </p>
+  </div>
+{% endmacro %}
+
+
+{% macro hints(ch, cost_min, cost_pts) %}
+  {% set unlocked = unlocked_hints(ch.id) %}
+  <div class="card glow-purple">
+    <div class="card-title">📖 Páginas del Cuento Perdido</div>
+    <p style="font-size:0.88rem;color:var(--text-dim);margin-bottom:0.9rem;">
+      Cada página que abras acerca a los osos: <b>−{{ cost_min }} MIN</b> y
+      <b>−{{ cost_pts }} PTS</b>.
+    </p>
+    <div class="hint-list">
+      {% for h in ch.hints %}
+        {% if loop.index0 in unlocked %}
+          <div class="hint">
+            <div class="h-head">
+              <span class="h-title">Pista {{ loop.index }}</span>
+              <span class="penalty">DESBLOQUEADA</span>
+            </div>
+            <div class="h-body">{{ h | safe }}</div>
+          </div>
+        {% else %}
+          <div class="hint locked">
+            <div class="h-head">
+              <span class="h-title">Pista {{ loop.index }}: {{ ch.name }}</span>
+              <span class="penalty">−{{ cost_min }} MIN / −{{ cost_pts }} PTS</span>
+            </div>
+            <form method="POST"
+                  action="{{ url_for('unlock_hint', cid=ch.id, n=loop.index0) }}"
+                  style="margin-top:0.7rem;">
+              <button class="btn btn-cyan" type="submit">Desbloquear pista</button>
+            </form>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+{% endmacro %}
+
+
+{% macro flag_form(ch, solved) %}
+  {% set prev_ch, next_ch = challenge_nav(ch.id) %}
+  <div class="card glow-green">
+    <div class="card-title">🚩 Enviar bandera</div>
+    {% if ch.id in solved %}
+      <div class="alert alert-success">✓ Bandera capturada. ¡Bien hecho!</div>
+      {% if next_ch %}
+        <a class="btn btn-green" href="{{ url_for(next_ch.endpoint) }}">
+          Siguiente: {{ next_ch.name }} →
+        </a>
+      {% else %}
+        <a class="btn btn-green" href="{{ url_for('scoreboard') }}">Ver marcador final →</a>
+      {% endif %}
+    {% else %}
+      <form method="POST" action="{{ url_for('submit_flag') }}">
+        <input type="hidden" name="challenge" value="{{ ch.id }}">
+        <div class="field">
+          <label>Bandera encontrada</label>
+          <input type="text" name="flag" placeholder="CTF{...}" autocomplete="off">
+        </div>
+        <button class="btn btn-green" type="submit">Enviar bandera</button>
+      </form>
+    {% endif %}
+  </div>
+{% endmacro %}
+
+
+{% macro nav_buttons(ch) %}
+  {% set prev_ch, next_ch = challenge_nav(ch.id) %}
+  <div class="ch-nav">
+    {% if prev_ch %}
+      <a class="btn btn-ghost" href="{{ url_for(prev_ch.endpoint) }}">← {{ prev_ch.name }}</a>
+    {% else %}
+      <a class="btn btn-ghost" href="{{ url_for('dashboard') }}">← Panel</a>
+    {% endif %}
+
+    <a class="btn btn-ghost" href="{{ url_for('dashboard') }}">Todas las banderas</a>
+
+    {% if next_ch %}
+      <a class="btn btn-outline" href="{{ url_for(next_ch.endpoint) }}">{{ next_ch.name }} →</a>
+    {% else %}
+      <a class="btn btn-outline" href="{{ url_for('scoreboard') }}">Marcador →</a>
+    {% endif %}
+  </div>
+{% endmacro %}
+
+
+{% macro detect_bar(detection) %}
+  <div class="detect" style="margin-bottom:1.2rem;">
+    <div class="lbl">Nivel de detección de los osos</div>
+    <div class="meter"><i style="width: {{ detection }}%;"></i></div>
+    <div class="scale">
+      <span class="{{ 'now' if detection < 40 }}">Tranquilo</span>
+      <span class="{{ 'now' if 40 <= detection < 80 }}">Cerca</span>
+      <span class="{{ 'now' if detection >= 80 }}">¡En la puerta!</span>
+    </div>
+  </div>
+{% endmacro %}

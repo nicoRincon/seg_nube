@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import challenge_header, briefing, hints, flag_form, detect_bar, nav_buttons %}
+{% block title %}La Sopa de Osito — Goldilocks CTF{% endblock %}
+
+{% block content %}
+<div class="wrap narrow">
+  {{ challenge_header(ch) }}
+  <p class="lead">"La sopa de Osito estaba justo a la temperatura correcta… si sabes en qué olla mirar."</p>
+
+  {{ detect_bar(g_detection) }}
+  {{ briefing(ch) }}
+
+  <div class="card glow-green">
+    <div class="card-title">🖥️ Consola de reconocimiento (simulada)</div>
+    <p style="font-size:0.9rem;color:var(--text-dim);">
+      En el laboratorio real lanzarías <code>nmap</code> desde Kali contra
+      <code>192.168.56.0/24</code>. Esta consola reproduce la salida del host correcto:
+    </p>
+    <div class="code-block">$ nmap -sS -sV -p- 192.168.56.12
+
+{{ banner }}</div>
+    <p style="font-size:0.85rem;color:var(--text-faint);">
+      La bandera viaja en el banner del servicio del puerto no estándar.
+    </p>
+  </div>
+
+  {{ hints(ch, hint_cost_min, hint_cost_pts) }}
+  {{ flag_form(ch, g_solved) }}
+
+  {{ nav_buttons(ch) }}
+</div>
+{% endblock %}

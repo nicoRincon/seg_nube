@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import detect_bar %}
+{% block title %}Panel — Goldilocks CTF{% endblock %}
+
+{% block content %}
+<div class="wrap">
+
+  <h1 class="bigtitle">GOLDILOCKS CTF</h1>
+  <p class="subtitle">La casa de los tres osos · 12 banderas · 3 fases</p>
+
+  {{ detect_bar(g_detection) }}
+
+  <div class="stats">
+    <div class="stat"><div class="v">{{ g_solved_n }}</div><div class="k">Banderas</div></div>
+    <div class="stat"><div class="v">{{ g_total_ch }}</div><div class="k">Totales</div></div>
+    <div class="stat"><div class="v">{{ g_score }}</div><div class="k">Puntos</div></div>
+    <div class="stat"><div class="v" style="font-size:1.2rem;color:var(--{{ 'green' if g_level=='low' else 'orange' if g_level=='medium' else 'red' }});">{{ g_level|upper }}</div><div class="k">Nivel</div></div>
+  </div>
+
+  {% set card_colors = {1:'c-green', 2:'c-gold', 3:'c-red'} %}
+  {% for phase in PHASES %}
+    <div class="phase-head phase-{{ phase.color }}">
+      Fase {{ phase.id }} — {{ phase.name }}
+      <span class="tag">{{ phase.tag }}</span>
+    </div>
+    <div class="grid">
+      {% for ch in CHALLENGES if ch.phase == phase.id %}
+        <a href="{{ url_for(ch.endpoint) }}"
+           class="ncard {{ card_colors[phase.id] }} {{ 'solved' if ch.id in g_solved }}">
+          <div class="ic">{{ ch.icon }}</div>
+          <div class="nm">{{ ch.name }}</div>
+          <div class="ct">{{ ch.category }}</div>
+          <div class="ds">{{ ch.brief | striptags | truncate(96) }}</div>
+          <div class="ft">
+            <span class="pts">{{ ch.pts }} PTS</span>
+            <span class="st {{ 'done' if ch.id in g_solved }}">
+              {{ '✓ capturada' if ch.id in g_solved else '○ pendiente' }}
+            </span>
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+  {% endfor %}
+
+  <div class="card" style="margin-top:2.4rem;">
+    <div class="card-title">📖 La historia</div>
+    <p style="font-style:italic;color:var(--text-dim);">
+      "Ricitos de Oro encontró la casa vacía. Primero cruzó <b>el bosque</b> siguiendo
+      el rastro de los osos (reconocimiento). Luego entró en <b>la casa</b> y probó las
+      camas (explotación web). Al final subió a <b>las habitaciones</b>, donde los osos
+      empezaban a despertar (escalada de privilegios)… y tuvo que escapar por la ventana."
+    </p>
+  </div>
+
+</div>
+{% endblock %}

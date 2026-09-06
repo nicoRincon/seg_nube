@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import challenge_header, briefing, hints, flag_form, detect_bar, nav_buttons %}
+{% block title %}La Cama de Mamá Osa — Goldilocks CTF{% endblock %}
+
+{% block content %}
+<div class="wrap narrow">
+  {{ challenge_header(ch) }}
+  <p class="lead">"La cama de Mamá Osa era muy blanda: filtra la comilla simple y cree que ya está a salvo."</p>
+
+  {{ detect_bar(g_detection) }}
+  {{ briefing(ch) }}
+
+  <div class="card" style="border-color:var(--yellow);box-shadow:0 0 20px rgba(253,224,71,0.22);">
+    <div class="card-title">🧪 Buscador de recetas <span style="font-size:0.75rem;color:var(--text-faint);">(nivel {{ g_level }})</span></div>
+    <form method="POST" action="{{ url_for('challenge_sqli_medium') }}">
+      <div class="field">
+        <label>Ingrediente</label>
+        <input type="text" name="ingredient" value="{{ query or '' }}"
+               placeholder='avena  ·  " OR 1=1--' autocomplete="off">
+      </div>
+      <button class="btn btn-cyan" type="submit">Buscar en el caldero</button>
+    </form>
+
+    {% if results is not none %}
+      <p style="margin-top:1rem;font-size:0.8rem;color:var(--text-faint);">
+        {{ results|length }} registro(s):
+      </p>
+      {% if results %}
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>{% for c in columns %}<th>{{ c }}</th>{% endfor %}</tr></thead>
+          <tbody>
+            {% for row in results %}
+              <tr>{% for cell in row %}<td>{{ cell }}</td>{% endfor %}</tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+        <p style="color:var(--text-faint);font-style:italic;">Sin resultados.</p>
+      {% endif %}
+    {% endif %}
+
+    <div class="code-block" style="margin-top:1rem;">safe = raw.replace("'", "")          # solo filtra la comilla simple
+sql  = f'SELECT name, description FROM recipes WHERE ingredient = "{safe}"'</div>
+  </div>
+
+  {{ hints(ch, hint_cost_min, hint_cost_pts) }}
+  {{ flag_form(ch, g_solved) }}
+
+  {{ nav_buttons(ch) }}
+</div>
+{% endblock %}

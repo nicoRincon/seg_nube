@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import challenge_header, briefing, hints, flag_form, detect_bar, nav_buttons %}
+{% block title %}El Camino al Bosque — Goldilocks CTF{% endblock %}
+
+{% block content %}
+<div class="wrap narrow">
+  {{ challenge_header(ch) }}
+  <p class="lead">"En el camino al bosque, Ricitos susurró su contraseña… y alguien estaba escuchando."</p>
+
+  {{ detect_bar(g_detection) }}
+  {{ briefing(ch) }}
+
+  <div class="card glow-green">
+    <div class="card-title">🛰️ Captura de red</div>
+    <p style="font-size:0.9rem;color:var(--text-dim);">
+      Descarga la captura y ábrela en Wireshark (o léela como texto). Busca la
+      petición HTTP con credenciales en texto claro.
+    </p>
+    <a href="{{ url_for('wireshark_capture') }}" class="btn btn-outline">
+      ⬇ Descargar captura_bosque.pcap
+    </a>
+    <div class="code-block" style="margin-top:1rem;">$ grep -i "Authorization: Basic" captura_bosque.pcap
+$ echo 'cmljaXRvczou...' | base64 -d</div>
+  </div>
+
+  {{ hints(ch, hint_cost_min, hint_cost_pts) }}
+  {{ flag_form(ch, g_solved) }}
+
+  {{ nav_buttons(ch) }}
+</div>
+{% endblock %}

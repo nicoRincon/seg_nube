@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block title %}Marcador — Goldilocks CTF{% endblock %}
+
+{% block content %}
+<div class="wrap narrow">
+
+  <div class="eyebrow">Marcador</div>
+  <h1 class="page">🏆 Los Tres Osos</h1>
+  <p class="lead">¿Quién se comió toda la sopa y capturó todas las banderas?</p>
+
+  <div class="stats">
+    <div class="stat"><div class="v">{{ g_score }}</div><div class="k">Mis puntos</div></div>
+    <div class="stat"><div class="v">{{ g_solved_n }}</div><div class="k">Capturadas</div></div>
+    <div class="stat"><div class="v">{{ g_total_ch }}</div><div class="k">Totales</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📋 Desafíos</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Fase</th><th>Desafío</th><th>Categoría</th><th>Pts</th><th>Estado</th></tr></thead>
+        <tbody>
+          {% for ch in CHALLENGES %}
+          <tr>
+            <td style="color:var(--text-faint);">{{ loop.index }}</td>
+            <td style="color:var(--{{ 'green' if ch.phase==1 else 'yellow' if ch.phase==2 else 'red' }});">{{ ch.phase }}</td>
+            <td><a href="{{ url_for(ch.endpoint) }}" style="text-decoration:none;">{{ ch.icon }} {{ ch.name }}</a></td>
+            <td><code style="font-size:0.78rem;color:var(--text-dim);">{{ ch.category }}</code></td>
+            <td style="color:var(--yellow);font-family:var(--font-mono);">{{ ch.pts }}</td>
+            <td>
+              {% if ch.id in g_solved %}
+                <span style="color:var(--green-neon);font-family:var(--font-mono);font-size:0.8rem;">✓ CAPTURADA</span>
+              {% else %}
+                <span style="color:var(--text-faint);font-family:var(--font-mono);font-size:0.8rem;">○ pendiente</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {% if board %}
+  <div class="card">
+    <div class="card-title">🥇 Clasificación global</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Pos</th><th>Jugador</th><th>Flags</th><th>Puntos</th></tr></thead>
+        <tbody>
+          {% for e in board %}
+          <tr {% if e.username == g_username %}style="background:rgba(253,224,71,0.06);"{% endif %}>
+            <td style="font-family:var(--font-mono);color:{% if loop.index==1 %}var(--yellow){% elif loop.index==2 %}#c0c0c0{% elif loop.index==3 %}#cd7f32{% else %}var(--text-faint){% endif %};">{{ loop.index }}</td>
+            <td>{{ e.username }}{% if e.username == g_username %} <span style="color:var(--yellow);font-size:0.75rem;">(tú)</span>{% endif %}</td>
+            <td style="font-family:var(--font-mono);">{{ e.flags }}</td>
+            <td style="font-family:var(--font-mono);color:var(--yellow);">{{ e.score }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

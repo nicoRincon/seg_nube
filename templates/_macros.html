@@ -1,19 +1,20 @@
 {# ─────────────── Reusable challenge components ─────────────── #}
 
+{% set PHASE_COLORS = {1:'green', 2:'gold', 3:'red'} %}
+
 {% macro challenge_header(ch) %}
-  {% set colors = {1:'green', 2:'gold', 3:'red'} %}
   {% set pnames = {1:'El Bosque', 2:'La Casa', 3:'Las Habitaciones'} %}
   <div class="eyebrow">Fase {{ ch.phase }} · {{ pnames[ch.phase] }} — {{ ch.category }}</div>
-  <h1 class="page phase-{{ colors[ch.phase] }}">{{ ch.icon }} {{ ch.name }}</h1>
+  <h1 class="page phase-{{ PHASE_COLORS[ch.phase] }}">{{ ch.icon }} {{ ch.name }}</h1>
 {% endmacro %}
 
 
 {% macro briefing(ch) %}
-  <div class="card glow-{{ {1:'green',2:'cyan',3:'red'}[ch.phase] }}">
+  <div class="card glow-{{ PHASE_COLORS[ch.phase] }}">
     <div class="card-title">📜 Misión</div>
     <p>{{ ch.brief | safe }}</p>
     <hr>
-    <p style="font-size:0.85rem;color:var(--text-faint);">
+    <p class="muted-note">
       Formato de bandera: <code>CTF{...}</code> &nbsp;·&nbsp; Vale {{ ch.pts }} PTS
     </p>
   </div>
@@ -22,11 +23,11 @@
 
 {% macro hints(ch, cost_min, cost_pts) %}
   {% set unlocked = unlocked_hints(ch.id) %}
-  <div class="card glow-purple">
+  <div class="card glow-purple" id="pistas">
     <div class="card-title">📖 Páginas del Cuento Perdido</div>
-    <p style="font-size:0.88rem;color:var(--text-dim);margin-bottom:0.9rem;">
-      Cada página que abras acerca a los osos: <b>−{{ cost_min }} MIN</b> y
-      <b>−{{ cost_pts }} PTS</b>.
+    <p class="hint-intro">
+      Cada página que abras acerca a los osos: <b>−{{ cost_min }} min</b> y
+      <b>−{{ cost_pts }} pts</b>.
     </p>
     <div class="hint-list">
       {% for h in ch.hints %}
@@ -34,20 +35,23 @@
           <div class="hint">
             <div class="h-head">
               <span class="h-title">Pista {{ loop.index }}</span>
-              <span class="penalty">DESBLOQUEADA</span>
+              <span class="penalty unlocked">Desbloqueada</span>
             </div>
             <div class="h-body">{{ h | safe }}</div>
           </div>
         {% else %}
           <div class="hint locked">
             <div class="h-head">
-              <span class="h-title">Pista {{ loop.index }}: {{ ch.name }}</span>
-              <span class="penalty">−{{ cost_min }} MIN / −{{ cost_pts }} PTS</span>
+              <span class="h-title">Pista {{ loop.index }}</span>
+              <span class="penalty">−{{ cost_min }} min · −{{ cost_pts }} pts</span>
             </div>
             <form method="POST"
-                  action="{{ url_for('unlock_hint', cid=ch.id, n=loop.index0) }}"
-                  style="margin-top:0.7rem;">
-              <button class="btn btn-cyan" type="submit">Desbloquear pista</button>
+                  action="{{ url_for('unlock_hint', cid=ch.id, n=loop.index0) }}#pistas">
+              <button class="btn btn-ghost btn-hold" type="submit"
+                      data-confirm="¿Desbloquear la pista {{ loop.index }}? Cuesta −{{ cost_min }} min y −{{ cost_pts }} pts.">
+                <span class="hold-fill" aria-hidden="true"></span>
+                <span class="hold-label">Mantén pulsado para desbloquear</span>
+              </button>
             </form>
           </div>
         {% endif %}
@@ -59,7 +63,7 @@
 
 {% macro flag_form(ch, solved) %}
   {% set prev_ch, next_ch = challenge_nav(ch.id) %}
-  <div class="card glow-green">
+  <div class="card is-primary" id="enviar">
     <div class="card-title">🚩 Enviar bandera</div>
     {% if ch.id in solved %}
       <div class="alert alert-success">✓ Bandera capturada. ¡Bien hecho!</div>
@@ -71,11 +75,11 @@
         <a class="btn btn-green" href="{{ url_for('scoreboard') }}">Ver marcador final →</a>
       {% endif %}
     {% else %}
-      <form method="POST" action="{{ url_for('submit_flag') }}">
+      <form method="POST" action="{{ url_for('submit_flag') }}#enviar">
         <input type="hidden" name="challenge" value="{{ ch.id }}">
         <div class="field">
-          <label>Bandera encontrada</label>
-          <input type="text" name="flag" placeholder="CTF{...}" autocomplete="off">
+          <label for="flag-{{ ch.id }}">Bandera encontrada</label>
+          <input type="text" id="flag-{{ ch.id }}" name="flag" placeholder="CTF{...}" autocomplete="off">
         </div>
         <button class="btn btn-green" type="submit">Enviar bandera</button>
       </form>
@@ -105,13 +109,13 @@
 
 
 {% macro detect_bar(detection) %}
-  <div class="detect" style="margin-bottom:1.2rem;">
+  <div class="detect">
     <div class="lbl">Nivel de detección de los osos</div>
-    <div class="meter"><i style="width: {{ detection }}%;"></i></div>
+    <div class="meter"><i style="transform: scaleX({{ detection / 100 }});"></i></div>
     <div class="scale">
-      <span class="{{ 'now' if detection < 40 }}">Tranquilo</span>
-      <span class="{{ 'now' if 40 <= detection < 80 }}">Cerca</span>
-      <span class="{{ 'now' if detection >= 80 }}">¡En la puerta!</span>
+      <span class="{{ 'now now-low'  if detection < 40 }}">Tranquilo</span>
+      <span class="{{ 'now now-mid'  if 40 <= detection < 80 }}">Cerca</span>
+      <span class="{{ 'now now-high' if detection >= 80 }}">¡En la puerta!</span>
     </div>
   </div>
 {% endmacro %}

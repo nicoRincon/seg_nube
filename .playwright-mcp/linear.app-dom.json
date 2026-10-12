@@ -1,0 +1,972 @@
+{
+  "errors": [],
+  "varCount": 176,
+  "vars": {
+    "--btn-highlight-bg": "transparent",
+    "--btn-highlight-color": "inherit",
+    "--btn-overlay-shadow": "none",
+    "--btn-overlay-shadow-hover": "none",
+    "--editor-hairline": "var(--sx-1ele6il)",
+    "--editor-bg-border-thin": "var(--sx-1o1lnwn)",
+    "--editor-block-radius": "6px",
+    "--editor-block-menu-size": "20px",
+    "--editor-line-height": "1.6",
+    "--editor-font-weight": "var(--font-weight-normal)",
+    "--editor-letter-spacing": "-.00666667em",
+    "--editor-bullet-disc-width": ".5em",
+    "--editor-todolist-checkbox-width": "14px",
+    "--editor-font-size": "var(--font-size-regular)",
+    "--editor-text-color": "var(--sx-3zwjav)",
+    "--focus-ring-color": "var(--sx-ch85qk)",
+    "--focus-ring-width": "1px",
+    "--focus-ring-outline": "var(--focus-ring-width) solid var(--focus-ring-color)",
+    "--icon-color": "initial",
+    "--icon-default-color": "initial",
+    "--icon-replacement-color": "initial",
+    "--link-text-decoration": "none",
+    "--scrollbar-width": "12px",
+    "--selection-bg": "",
+    "--selection-bg-active": ""
+  },
+  "colors": {
+    "body": "rgb(8, 9, 10)",
+    "html": "rgb(8, 9, 10)",
+    "bg": [
+      [
+        "rgb(8, 9, 10)",
+        10472864
+      ],
+      [
+        "rgb(15, 16, 17)",
+        4003314
+      ],
+      [
+        "rgb(9, 10, 11)",
+        950400
+      ],
+      [
+        "rgb(16, 17, 18)",
+        950400
+      ],
+      [
+        "rgba(255, 255, 255, 0.01)",
+        754688
+      ],
+      [
+        "rgb(22, 23, 24)",
+        260221
+      ],
+      [
+        "rgb(228, 242, 34)",
+        207360
+      ],
+      [
+        "rgba(255, 255, 255, 0.02)",
+        184162
+      ],
+      [
+        "rgba(39, 166, 68, 0.07)",
+        57031
+      ],
+      [
+        "rgba(243, 78, 82, 0.1)",
+        40735
+      ],
+      [
+        "rgba(0, 255, 5, 0.1)",
+        11290
+      ],
+      [
+        "rgba(255, 255, 255, 0.05)",
+        9862
+      ],
+      [
+        "rgb(229, 229, 230)",
+        7886
+      ],
+      [
+        "rgba(255, 255, 255, 0.07)",
+        7575
+      ],
+      [
+        "rgba(255, 255, 255, 0.08)",
+        6283
+      ]
+    ],
+    "text": [
+      [
+        "rgb(208, 214, 224)",
+        3237
+      ],
+      [
+        "rgb(138, 143, 152)",
+        2781
+      ],
+      [
+        "rgb(98, 102, 109)",
+        873
+      ],
+      [
+        "rgb(247, 248, 248)",
+        761
+      ],
+      [
+        "rgb(8, 9, 10)",
+        260
+      ],
+      [
+        "rgb(247, 191, 139)",
+        231
+      ],
+      [
+        "rgb(226, 228, 231)",
+        185
+      ],
+      [
+        "rgb(247, 156, 224)",
+        157
+      ],
+      [
+        "rgb(255, 223, 159)",
+        130
+      ],
+      [
+        "rgb(131, 220, 220)",
+        78
+      ],
+      [
+        "rgb(143, 166, 255)",
+        68
+      ],
+      [
+        "rgb(98, 99, 102)",
+        51
+      ],
+      [
+        "rgb(148, 148, 150)",
+        43
+      ],
+      [
+        "rgba(0, 0, 0, 0)",
+        24
+      ],
+      [
+        "rgb(109, 120, 213)",
+        7
+      ]
+    ],
+    "borders": [
+      [
+        "rgba(255, 255, 255, 0.08) 0.8px",
+        68
+      ],
+      [
+        "rgba(255, 255, 255, 0.12) 0.8px",
+        13
+      ],
+      [
+        "rgba(255, 255, 255, 0.05) 0.8px",
+        3
+      ],
+      [
+        "rgb(35, 37, 42) 0.8px",
+        3
+      ],
+      [
+        "rgb(229, 229, 230) 0.8px",
+        2
+      ],
+      [
+        "rgb(46, 46, 50) 0.8px",
+        2
+      ],
+      [
+        "rgb(36, 40, 44) 0.8px",
+        1
+      ],
+      [
+        "rgba(255, 255, 255, 0.06) 0.8px",
+        1
+      ],
+      [
+        "rgb(42, 42, 45) 0.8px",
+        1
+      ],
+      [
+        "rgba(0, 0, 0, 0) 0.8px",
+        1
+      ]
+    ]
+  },
+  "typography": [
+    "SPAN | \"Inter Variable\" | 64px | 510 | 64px | -1.408px | rgb(247, 248, 248) | x3 | \"The product development\"",
+    "H2 | \"Inter Variable\" | 48px | 510 | 48px | -1.056px | rgb(247, 248, 248) | x4 | \"Intake\nand integrations\"",
+    "H2 | \"Inter Variable\" | 40px | 510 | 44px | -0.88px | rgb(138, 143, 152) | x1 | \"A new species of product tool. Purpose-b\"",
+    "STRONG | \"Inter Variable\" | 40px | 510 | 44px | -0.88px | rgb(247, 248, 248) | x1 | \"A new species of product tool.\"",
+    "H2 | \"Inter Variable\" | 40px | 510 | 44px | -0.88px | rgb(247, 248, 248) | x2 | \"Changelog\"",
+    "P | \"Inter Variable\" | 32px | 400 | 36px | -0.704px | rgb(8, 9, 10) | x2 | \"You’ll probably build a better product, \"",
+    "P | \"Inter Variable\" | 24px | 400 | 31.92px | -0.288px | rgb(208, 214, 224) | x4 | \"Automatically turn conversations and cus\"",
+    "H3 | \"Inter Variable\" | 20px | 590 | 26.6px | -0.24px | rgb(208, 214, 224) | x1 | \"Faster app launch\"",
+    "H4 | \"Inter Variable\" | 16px | 590 | 28px | normal | rgb(208, 214, 224) | x1 | \"Activity\"",
+    "SPAN | \"Inter Variable\" | 16px | 590 | 20px | normal | rgb(208, 214, 224) | x1 | \"Thread\"",
+    "A | \"Inter Variable\" | 16px | 510 | 44px | normal | rgb(8, 9, 10) | x1 | \"Get started\"",
+    "A | \"Inter Variable\" | 16px | 510 | 44px | normal | rgb(247, 248, 248) | x1 | \"Contact sales\"",
+    "SPAN | \"Inter Variable\" | 15px | 400 | 24px | -0.165px | rgb(138, 143, 152) | x31 | \"Purpose-built for planning and building \"",
+    "SPAN | \"Inter Variable\" | 15px | 510 | 24px | -0.165px | rgb(208, 214, 224) | x7 | \"New\"",
+    "SPAN | \"Inter Variable\" | 15px | 590 | 20px | -0.165px | rgb(208, 214, 224) | x4 | \"didier\"",
+    "SPAN | \"Inter Variable\" | 15px | 300 | 20px | -0.06px | rgb(208, 214, 224) | x4 | \"Has anyone been looking into the iOS sta\"",
+    "SPAN | \"Inter Variable\" | 15px | 400 | 24px | -0.165px | rgb(109, 120, 213) | x1 | \"@Linear\"",
+    "SPAN | \"Inter Variable\" | 15px | 400 | 24px | -0.165px | rgb(208, 214, 224) | x1 | \"create issues and assign to me\"",
+    "SPAN | \"Inter Variable\" | 15px | 400 | 24px | -0.165px | rgb(98, 102, 109) | x4 | \"Features\"",
+    "P | \"Inter Variable\" | 15px | 400 | 24px | -0.165px | rgb(138, 143, 152) | x1 | \"Linear powers over 40,000 product teams.\"",
+    "STRONG | \"Inter Variable\" | 15px | 510 | 24px | -0.165px | rgb(208, 214, 224) | x1 | \"40,000\"",
+    "SPAN | \"Inter Variable\" | 14px | 590 | 21px | -0.182px | rgb(208, 214, 224) | x1 | \"Linear\"",
+    "P | \"Inter Variable\" | 14px | 400 | 21px | -0.182px | rgb(138, 143, 152) | x1 | \"Render UI before vehicle_state sync when\"",
+    "SPAN | \"Inter Variable\" | 14px | 510 | 32px | -0.182px | rgb(208, 214, 224) | x1 | \"Cycle time by agent\"",
+    "SPAN | \"Berkeley Mono\" | 14px | 400 | 21px | normal | rgb(98, 102, 109) | x1 | \"kinetic-ios/src/screens/Home/HomeScreen.\"",
+    "SPAN | \"Berkeley Mono\" | 14px | 400 | 24px | normal | rgb(247, 156, 224) | x31 | \"import\"",
+    "SPAN | \"Berkeley Mono\" | 14px | 400 | 24px | normal | rgb(247, 191, 139) | x22 | \"React\"",
+    "SPAN | \"Berkeley Mono\" | 14px | 400 | 24px | normal | rgb(255, 223, 159) | x10 | \"react\"",
+    "SPAN | \"Berkeley Mono\" | 14px | 400 | 24px | normal | rgb(131, 220, 220) | x9 | \"HomeScreen\"",
+    "SPAN | \"Berkeley Mono\" | 14px | 400 | 24px | normal | rgb(226, 228, 231) | x12 | \"()\"",
+    "SPAN | \"Berkeley Mono\" | 14px | 400 | 24px | normal | rgb(143, 166, 255) | x8 | \"ActivityIndicator\"",
+    "TEXTAREA | \"Berkeley Mono\" | 14px | 400 | 24px | normal | rgba(0, 0, 0, 0) | x1 | \"\"",
+    "SPAN | \"Inter Variable\" | 14px | 510 | 21px | -0.182px | rgb(8, 9, 10) | x2 | \"Gabriel Peal\"",
+    "SPAN | \"Inter Variable\" | 14px | 400 | 21px | -0.182px | rgb(8, 9, 10) | x2 | \"Staff Software Engineer, OpenAI\"",
+    "BUTTON | \"Inter Variable\" | 13px | 400 | 19.5px | normal | rgb(138, 143, 152) | x2 | \"Product\"",
+    "A | \"Inter Variable\" | 13px | 400 | 19.5px | normal | rgb(138, 143, 152) | x5 | \"Customers\"",
+    "A | \"Inter Variable\" | 13px | 510 | 32px | normal | rgb(8, 9, 10) | x1 | \"Sign up\"",
+    "SPAN | \"Inter Variable\" | 13px | 510 | normal | normal | rgb(208, 214, 224) | x11 | \"Pulse\"",
+    "SPAN | \"Inter Variable\" | 13px | 510 | 20px | -0.13px | rgb(208, 214, 224) | x1 | \"karri\"",
+    "SPAN | \"Inter Variable\" | 13px | 400 | 16px | -0.13px | rgb(138, 143, 152) | x2 | \"Right now we show a spinner forever, whi\"",
+    "SPAN | \"Inter Variable\" | 13px | 510 | 16px | -0.13px | rgb(208, 214, 224) | x1 | \"jori\"",
+    "SPAN | \"Inter Variable\" | 13px | 510 | 19.5px | -0.13px | rgb(208, 214, 224) | x15 | \"Linear\"",
+    "SPAN | \"Inter Variable\" | 13px | 500 | 20px | normal | rgb(208, 214, 224) | x5 | \"Linear\"",
+    "P | \"Inter Variable\" | 13px | 400 | 20px | -0.039px | rgb(247, 248, 248) | x5 | \"Fix the dimmed ride rows that never rese\"",
+    "P | \"Inter Variable\" | 13px | 400 | 20px | -0.039px | rgb(208, 214, 224) | x5 | \"Pushed and opened a draft PR. Removed di\""
+  ],
+  "fontFamilies": [
+    "\"Inter Variable\", \"SF Pro Display\", -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen, Ubuntu, Cantarell, \"Open Sans\", \"Helvetica Neue\", sans-serif",
+    "\"Berkeley Mono\", ui-monospace, \"SF Mono\", Menlo, monospace"
+  ],
+  "fontFeatures": [
+    "\"cv01\", \"ss03\"",
+    "normal"
+  ],
+  "effects": {
+    "shadows": [
+      [
+        "rgba(0, 0, 0, 0.2) 0px 0px 0px 1px",
+        8
+      ],
+      [
+        "rgba(0, 0, 0, 0.2) 0px 0px 12px 0px inset",
+        7
+      ],
+      [
+        "rgba(0, 0, 0, 0.25) 0px 2px 32px 0px",
+        5
+      ],
+      [
+        "rgba(255, 255, 255, 0.08) 0px 0px 0px 0.5px inset",
+        5
+      ],
+      [
+        "rgba(255, 255, 255, 0.05) 0px 0px 0px 1px inset",
+        4
+      ],
+      [
+        "rgb(35, 37, 42) 0px 0px 0px 1px inset",
+        3
+      ],
+      [
+        "rgba(0, 0, 0, 0) 0px 8px 2px 0px, rgba(0, 0, 0, 0.01) 0px 5px 2px 0px, rgba(0, 0, 0, 0.04) 0px 3px 2px 0px, rgba(0, 0, 0, 0.07) 0px 1px 1px 0px, rgba(0, 0, 0, 0.08) 0px 0px 1px 0px",
+        2
+      ],
+      [
+        "rgba(0, 0, 0, 0.06) 0px 4px 4px -1px, rgba(0, 0, 0, 0.12) 0px 1px 1px 0px",
+        2
+      ],
+      [
+        "rgba(0, 0, 0, 0.2) 0px 0px 0px 2px",
+        1
+      ],
+      [
+        "rgba(0, 0, 0, 0.4) 0px 1px 0px 0px",
+        1
+      ]
+    ],
+    "radii": [
+      [
+        "9999px",
+        72
+      ],
+      [
+        "8px",
+        30
+      ],
+      [
+        "50%",
+        28
+      ],
+      [
+        "12px",
+        26
+      ],
+      [
+        "4px",
+        24
+      ],
+      [
+        "9px",
+        18
+      ],
+      [
+        "6px",
+        11
+      ],
+      [
+        "999px",
+        10
+      ],
+      [
+        "2px",
+        7
+      ],
+      [
+        "16px",
+        6
+      ],
+      [
+        "5px",
+        3
+      ],
+      [
+        "22px",
+        2
+      ]
+    ],
+    "backdrop": [
+      [
+        "blur(20px)",
+        1
+      ],
+      [
+        "blur(4px)",
+        1
+      ]
+    ],
+    "transitions": [
+      [
+        "color 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+        187
+      ],
+      [
+        "color 0.1s ease",
+        34
+      ],
+      [
+        "filter, transform 0.16s, 0.16s cubic-bezier(0.25, 0.46, 0.45, 0.94), cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+        22
+      ],
+      [
+        "color 0.16s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+        20
+      ],
+      [
+        "background 0.4s ease-out",
+        19
+      ],
+      [
+        "background-color, border-left-color 0.1s, 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94), cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+        8
+      ],
+      [
+        "color, background 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+        7
+      ],
+      [
+        "filter 0.16s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+        6
+      ]
+    ]
+  },
+  "header": {
+    "h": 72.80000305175781,
+    "w": 1023.2000122070312,
+    "position": "fixed",
+    "bg": "rgba(0, 0, 0, 0)",
+    "backdrop": "blur(20px)",
+    "borderBottom": "0.8px solid rgba(255, 255, 255, 0.08)"
+  },
+  "buttons": [
+    {
+      "t": "Sign up",
+      "h": 32,
+      "w": 73,
+      "bg": "rgb(229, 229, 230)",
+      "c": "rgb(8, 9, 10)",
+      "fs": "13px",
+      "fw": "510",
+      "pad": "0px 12px",
+      "rad": "9999px",
+      "border": "0.8px solid rgb(229, 229, 230)"
+    },
+    {
+      "t": "New issue",
+      "h": 28,
+      "w": 28,
+      "bg": "rgba(255, 255, 255, 0.02)",
+      "c": "rgb(226, 228, 231)",
+      "fs": "13.3333px",
+      "fw": "400",
+      "pad": "0px",
+      "rad": "9999px",
+      "border": "0.8px solid rgb(36, 40, 44)"
+    },
+    {
+      "t": "Faster app launch",
+      "h": 28,
+      "w": 208,
+      "bg": "rgba(255, 255, 255, 0.04)",
+      "c": "rgb(208, 214, 224)",
+      "fs": "13px",
+      "fw": "510",
+      "pad": "0px 7px",
+      "rad": "8px",
+      "border": "0px none rgb(208, 214, 224)"
+    },
+    {
+      "t": "Copy issue URL",
+      "h": 28,
+      "w": 28,
+      "bg": "rgba(255, 255, 255, 0.02)",
+      "c": "rgb(138, 143, 152)",
+      "fs": "13.3333px",
+      "fw": "400",
+      "pad": "0px 7px",
+      "rad": "9999px",
+      "border": "0px none rgb(138, 143, 152)"
+    },
+    {
+      "t": "Copy issue ID",
+      "h": 28,
+      "w": 28,
+      "bg": "rgba(255, 255, 255, 0.02)",
+      "c": "rgb(138, 143, 152)",
+      "fs": "13.3333px",
+      "fw": "400",
+      "pad": "0px 7px",
+      "rad": "9999px",
+      "border": "0px none rgb(138, 143, 152)"
+    },
+    {
+      "t": "Copy git branch name",
+      "h": 28,
+      "w": 28,
+      "bg": "rgba(255, 255, 255, 0.02)",
+      "c": "rgb(138, 143, 152)",
+      "fs": "13.3333px",
+      "fw": "400",
+      "pad": "0px 7px",
+      "rad": "9999px",
+      "border": "0px none rgb(138, 143, 152)"
+    },
+    {
+      "t": "Performance",
+      "h": 24,
+      "w": 111,
+      "bg": "rgba(0, 0, 0, 0)",
+      "c": "rgb(208, 214, 224)",
+      "fs": "12px",
+      "fw": "400",
+      "pad": "0px 11px 0px 7px",
+      "rad": "16px",
+      "border": "0.8px solid rgb(46, 46, 50)"
+    },
+    {
+      "t": "iOS",
+      "h": 24,
+      "w": 57,
+      "bg": "rgba(0, 0, 0, 0)",
+      "c": "rgb(208, 214, 224)",
+      "fs": "12px",
+      "fw": "400",
+      "pad": "0px 11px 0px 7px",
+      "rad": "16px",
+      "border": "0.8px solid rgb(46, 46, 50)"
+    },
+    {
+      "t": "Attach file",
+      "h": 32,
+      "w": 32,
+      "bg": "rgba(255, 255, 255, 0.05)",
+      "c": "rgb(98, 102, 109)",
+      "fs": "13.3333px",
+      "fw": "400",
+      "pad": "0px",
+      "rad": "50%",
+      "border": "0px none rgb(98, 102, 109)"
+    },
+    {
+      "t": "Our speed is intense and ",
+      "h": 480,
+      "w": 432,
+      "bg": "rgb(228, 242, 34)",
+      "c": "rgb(247, 248, 248)",
+      "fs": "16px",
+      "fw": "400",
+      "pad": "24px 32px",
+      "rad": "8px",
+      "border": "0px none rgb(247, 248, 248)"
+    },
+    {
+      "t": "Get started",
+      "h": 44,
+      "w": 126,
+      "bg": "rgb(229, 229, 230)",
+      "c": "rgb(8, 9, 10)",
+      "fs": "16px",
+      "fw": "510",
+      "pad": "0px 20px",
+      "rad": "9999px",
+      "border": "0.8px solid rgb(229, 229, 230)"
+    },
+    {
+      "t": "Contact sales",
+      "h": 44,
+      "w": 144,
+      "bg": "rgba(255, 255, 255, 0.05)",
+      "c": "rgb(247, 248, 248)",
+      "fs": "16px",
+      "fw": "510",
+      "pad": "0px 20px",
+      "rad": "9999px",
+      "border": "0px none rgb(247, 248, 248)"
+    }
+  ],
+  "nav": [
+    {
+      "t": "",
+      "fs": "16px",
+      "fw": "400",
+      "c": "rgb(247, 248, 248)",
+      "x": 33,
+      "w": 104,
+      "pad": "0px 8px"
+    },
+    {
+      "t": "Customers",
+      "fs": "13px",
+      "fw": "400",
+      "c": "rgb(138, 143, 152)",
+      "x": 523,
+      "w": 91,
+      "pad": "0px 12px"
+    },
+    {
+      "t": "Pricing",
+      "fs": "13px",
+      "fw": "400",
+      "c": "rgb(138, 143, 152)",
+      "x": 614,
+      "w": 67,
+      "pad": "0px 12px"
+    },
+    {
+      "t": "Now",
+      "fs": "13px",
+      "fw": "400",
+      "c": "rgb(138, 143, 152)",
+      "x": 680,
+      "w": 52,
+      "pad": "0px 12px"
+    }
+  ],
+  "h1": {
+    "x": 40,
+    "y": 272,
+    "w": 941.2000122070312,
+    "h": 128,
+    "fs": "64px",
+    "lh": "64px",
+    "ls": "-1.408px",
+    "fw": "510",
+    "ff": "\"Inter Variable\", \"SF Pro Display\", -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen, Ubuntu, Cantarell, \"Open Sans\", \"Helvetica Neue\", sans-serif",
+    "color": "rgb(247, 248, 248)",
+    "maxW": "none",
+    "text": "The product development\nsystem for teams and agents\nThe product development system for teams and agents"
+  },
+  "containers": [
+    [
+      "1364px w1003 x10 pad0px",
+      4
+    ],
+    [
+      "1364px w1023 x0 pad41px",
+      1
+    ],
+    [
+      "620px w620 x362 pad0px",
+      1
+    ],
+    [
+      "1364px w1023 x0 pad10px",
+      1
+    ],
+    [
+      "1364px w1003 x10 pad32px",
+      1
+    ],
+    [
+      "100% w1920 x-453 pad0px",
+      1
+    ],
+    [
+      "100% w1038 x-8 pad0px",
+      1
+    ],
+    [
+      "calc(100% + 32px) w662 x321 pad16px",
+      1
+    ],
+    [
+      "calc(100% + 32px) w662 x321 pad0px",
+      1
+    ],
+    [
+      "1250px w1005 x8 pad32px",
+      1
+    ]
+  ],
+  "grid": [
+    [
+      "1col gapnormal/normal",
+      165
+    ],
+    [
+      "2col gapnormal/normal",
+      14
+    ],
+    [
+      "5col gapnormal/normal",
+      1
+    ],
+    [
+      "12col gap0px/0px",
+      1
+    ],
+    [
+      "3col gap64px/64px",
+      1
+    ],
+    [
+      "6col gap0px/0px",
+      1
+    ]
+  ],
+  "flexGaps": [
+    [
+      "8px",
+      90
+    ],
+    [
+      "6px",
+      64
+    ],
+    [
+      "4px",
+      64
+    ],
+    [
+      "12px",
+      17
+    ],
+    [
+      "2px",
+      11
+    ],
+    [
+      "10px",
+      5
+    ],
+    [
+      "16px",
+      4
+    ],
+    [
+      "11px",
+      4
+    ],
+    [
+      "5px",
+      4
+    ],
+    [
+      "24px",
+      2
+    ],
+    [
+      "20px",
+      2
+    ],
+    [
+      "32px",
+      1
+    ],
+    [
+      "40px",
+      1
+    ]
+  ],
+  "spacingSamples": [
+    [
+      "32px",
+      86
+    ],
+    [
+      "4px",
+      54
+    ],
+    [
+      "6px",
+      49
+    ],
+    [
+      "8px",
+      44
+    ],
+    [
+      "12px",
+      38
+    ],
+    [
+      "7px",
+      22
+    ],
+    [
+      "14px",
+      18
+    ],
+    [
+      "10px",
+      16
+    ],
+    [
+      "36px",
+      15
+    ],
+    [
+      "11px",
+      11
+    ],
+    [
+      "3px",
+      9
+    ],
+    [
+      "20px",
+      8
+    ],
+    [
+      "24px",
+      7
+    ],
+    [
+      "1px",
+      6
+    ],
+    [
+      "16px",
+      6
+    ],
+    [
+      "5px",
+      6
+    ],
+    [
+      "40px",
+      5
+    ],
+    [
+      "30px",
+      4
+    ]
+  ],
+  "sections": [
+    {
+      "tag": "DIV",
+      "y": 72,
+      "h": 9173,
+      "pt": "0px",
+      "pb": "0px",
+      "mt": "0px",
+      "bg": "rgba(0, 0, 0, 0)",
+      "bt": "0px none rgb(247, 248, 248)",
+      "hd": "Faster app launch"
+    },
+    {
+      "tag": "SECTION",
+      "y": 2265,
+      "h": 1256,
+      "pt": "128px",
+      "pb": "128px",
+      "mt": "0px",
+      "bg": "rgba(0, 0, 0, 0)",
+      "bt": "0px none rgb(247, 248, 248)",
+      "hd": "Intake\nand integrations"
+    },
+    {
+      "tag": "SECTION",
+      "y": 3530,
+      "h": 1259,
+      "pt": "128px",
+      "pb": "128px",
+      "mt": "0px",
+      "bg": "rgba(0, 0, 0, 0)",
+      "bt": "0px none rgb(247, 248, 248)",
+      "hd": "Planning\nand monitoring"
+    },
+    {
+      "tag": "SECTION",
+      "y": 4799,
+      "h": 1262,
+      "pt": "128px",
+      "pb": "128px",
+      "mt": "0px",
+      "bg": "rgba(0, 0, 0, 0)",
+      "bt": "0px none rgb(247, 248, 248)",
+      "hd": "AI and\nautomations"
+    },
+    {
+      "tag": "SECTION",
+      "y": 6071,
+      "h": 1250,
+      "pt": "128px",
+      "pb": "128px",
+      "mt": "0px",
+      "bg": "rgba(0, 0, 0, 0)",
+      "bt": "0px none rgb(247, 248, 248)",
+      "hd": "Build, review,\nand ship"
+    },
+    {
+      "tag": "SECTION",
+      "y": 8061,
+      "h": 564,
+      "pt": "0px",
+      "pb": "0px",
+      "mt": "0px",
+      "bg": "rgba(0, 0, 0, 0)",
+      "bt": "0px none rgb(247, 248, 248)"
+    },
+    {
+      "tag": "SECTION",
+      "y": 8849,
+      "h": 172,
+      "pt": "0px",
+      "pb": "0px",
+      "mt": "224px",
+      "bg": "rgba(0, 0, 0, 0)",
+      "bt": "0px none rgb(247, 248, 248)",
+      "hd": "Built for the future. Availabl"
+    }
+  ],
+  "cards": [
+    {
+      "w": 1320,
+      "h": 720,
+      "bg": "rgb(9, 10, 11)",
+      "border": "0px none rgb(247, 248, 248)",
+      "rad": "12px",
+      "shadow": "none",
+      "pad": "8px"
+    },
+    {
+      "w": 1320,
+      "h": 720,
+      "bg": "rgb(16, 17, 18)",
+      "border": "0.8px solid rgba(255, 255, 255, 0.08)",
+      "rad": "12px",
+      "shadow": "none",
+      "pad": "0px"
+    },
+    {
+      "w": 1072,
+      "h": 704,
+      "bg": "rgba(255, 255, 255, 0.01)",
+      "border": "0.8px solid rgba(255, 255, 255, 0.05)",
+      "rad": "8px",
+      "shadow": "rgba(0, 0, 0, 0.2) 0px 0px 0px 2px",
+      "pad": "0px"
+    },
+    {
+      "w": 662,
+      "h": 147,
+      "bg": "rgb(15, 16, 17)",
+      "border": "0.8px solid rgba(255, 255, 255, 0.08)",
+      "rad": "9px",
+      "shadow": "rgba(0, 0, 0, 0.2) 0px 0px 0px 1px",
+      "pad": "12px 16px 16px"
+    },
+    {
+      "w": 400,
+      "h": 520,
+      "bg": "rgb(22, 23, 24)",
+      "border": "0.8px solid rgba(255, 255, 255, 0.12)",
+      "rad": "12px",
+      "shadow": "rgba(0, 0, 0, 0.25) 0px 2px 32px 0px",
+      "pad": "0px"
+    },
+    {
+      "w": 1320,
+      "h": 720,
+      "bg": "rgba(0, 0, 0, 0)",
+      "border": "0.8px solid rgba(255, 255, 255, 0.08)",
+      "rad": "12px",
+      "shadow": "none",
+      "pad": "0px"
+    },
+    {
+      "w": 1320,
+      "h": 704,
+      "bg": "rgba(0, 0, 0, 0)",
+      "border": "0.8px solid rgba(255, 255, 255, 0.08)",
+      "rad": "8px",
+      "shadow": "none",
+      "pad": "0px"
+    },
+    {
+      "w": 1320,
+      "h": 720,
+      "bg": "rgba(0, 0, 0, 0)",
+      "border": "0.8px solid rgba(255, 255, 255, 0.08)",
+      "rad": "12px",
+      "shadow": "none",
+      "pad": "0px"
+    },
+    {
+      "w": 1320,
+      "h": 704,
+      "bg": "rgba(0, 0, 0, 0)",
+      "border": "0.8px solid rgba(255, 255, 255, 0.08)",
+      "rad": "8px",
+      "shadow": "none",
+      "pad": "0px"
+    },
+    {
+      "w": 1104,
+      "h": 626,
+      "bg": "rgba(0, 0, 0, 0)",
+      "border": "0.8px solid rgba(255, 255, 255, 0.08)",
+      "rad": "22px",
+      "shadow": "none",
+      "pad": "8px"
+    }
+  ],
+  "images": {
+    "img": 39,
+    "svg": 243,
+    "video": 0,
+    "canvas": 0
+  }
+}

@@ -10,19 +10,26 @@
 </head>
 <body>
 
+{% set on_lose = request.endpoint == 'lose' %}
+{% set narrow_page = request.endpoint and (request.endpoint.startswith('challenge_') or request.endpoint == 'scoreboard') %}
+
 {% if g_started %}
 <div class="topbar">
 <header class="hud">
   <a href="{{ url_for('dashboard') }}" class="who">
     <span class="avatar">🧒</span>
-    {{ g_username }} <small>({{ 'invitado' if g_guest else g_role }})</small>
+    <span class="name">{{ g_username }} <small>({{ 'invitado' if g_guest else g_role }})</small></span>
   </a>
-  <button class="menu-btn" onclick="document.getElementById('dm').hidden = !document.getElementById('dm').hidden">☰</button>
+  <button class="menu-btn" type="button" aria-label="Menú" aria-controls="dm" aria-expanded="false"
+          onclick="var m = document.getElementById('dm'); m.hidden = !m.hidden; this.setAttribute('aria-expanded', String(!m.hidden));">☰</button>
+  {% if not on_lose %}
   <div class="timer" id="timer" data-remaining="{{ g_remaining }}">--:--</div>
+  {% endif %}
   <div class="score"><b id="score">{{ g_score }}</b> / {{ g_total_pts }} PTS</div>
 </header>
 
 <nav class="dropmenu" id="dm" hidden>
+  <span class="menu-user">{{ g_username }} <small>({{ 'invitado' if g_guest else g_role }})</small></span>
   <a href="{{ url_for('dashboard') }}" class="{{ 'active' if request.endpoint=='dashboard' }}">Inicio</a>
   <span class="sep">·</span>
   <a href="{{ url_for('scoreboard') }}" class="{{ 'active' if request.endpoint=='scoreboard' }}">Marcador</a>
@@ -39,12 +46,12 @@
 </div>
 {% endif %}
 
-<div class="flash">
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% for cat, msg in messages %}
+<div class="flash {{ 'narrow' if narrow_page }}" id="flash">
+  {%- with messages = get_flashed_messages(with_categories=true) %}
+    {%- for cat, msg in messages %}
       <div class="alert alert-{{ cat }}">{{ msg }}</div>
-    {% endfor %}
-  {% endwith %}
+    {%- endfor %}
+  {%- endwith %}
 </div>
 
 {% block content %}{% endblock %}
@@ -54,7 +61,7 @@
   <b>⚠ Solo para uso educativo en entornos controlados</b>
 </footer>
 
-{% if g_started %}
+{% if g_started and not on_lose %}
 <script>
 (function () {
   var el = document.getElementById('timer');
@@ -88,6 +95,43 @@
         if (d.over) window.location = "{{ url_for('lose') }}";
       }).catch(function () {});
   }, 20000);
+})();
+
+// Tras enviar bandera o abrir pista se vuelve con #enviar / #pistas:
+// el aviso se muestra dentro de esa tarjeta, junto a donde actuó el jugador.
+(function () {
+  var id = location.hash.slice(1);
+  if (id !== 'enviar' && id !== 'pistas') return;
+  var card = document.getElementById(id);
+  var flash = document.getElementById('flash');
+  if (!card || !flash || !flash.children.length) return;
+  var title = card.querySelector('.card-title');
+  if (title) title.insertAdjacentElement('afterend', flash);
+  flash.classList.add('in-card');
+})();
+
+// Pistas: mantener pulsado para desbloquear (con teclado se pide confirmación).
+(function () {
+  var HOLD_MS = 1200;
+  document.querySelectorAll('.btn-hold').forEach(function (btn) {
+    var form = btn.form, timer = null;
+    function send() { btn.disabled = true; form.submit(); }
+    function cancel() { clearTimeout(timer); btn.classList.remove('holding'); }
+    btn.addEventListener('pointerdown', function (e) {
+      if (e.button !== 0 || btn.disabled) return;
+      btn.classList.add('holding');
+      timer = setTimeout(function () { btn.classList.remove('holding'); send(); }, HOLD_MS);
+    });
+    ['pointerup', 'pointerleave', 'pointercancel'].forEach(function (ev) {
+      btn.addEventListener(ev, cancel);
+    });
+    btn.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+    btn.addEventListener('click', function (e) {
+      e.preventDefault();
+      // detail === 0 → activado con teclado o lector de pantalla
+      if (e.detail === 0 && !btn.disabled && confirm(btn.dataset.confirm)) send();
+    });
+  });
 })();
 </script>
 {% endif %}

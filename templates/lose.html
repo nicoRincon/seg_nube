@@ -3,27 +3,27 @@
 
 {% block content %}
 <div class="lose">
-  <div class="warns">
-    <span style="top:6%;left:4%;">⚠</span>
-    <span style="top:12%;left:12%;font-size:1.3rem;">❗</span>
-    <span style="top:4%;right:6%;">❗</span>
-    <span style="top:20%;right:3%;font-size:1.5rem;">⚡</span>
-    <span style="bottom:10%;left:3%;font-size:1.6rem;">⚠</span>
-    <span style="bottom:6%;right:8%;">⚡</span>
-    <span style="bottom:16%;right:14%;font-size:1.2rem;">❗</span>
+  <div class="warns" aria-hidden="true">
+    <span>⚠</span>
+    <span>❗</span>
+    <span>❗</span>
+    <span>⚡</span>
+    <span>⚠</span>
+    <span>⚡</span>
+    <span>❗</span>
   </div>
 
   <h1>¡LOS TRES OSOS ESTÁN CERCA!</h1>
 
   <div class="lose-grid">
     <div class="lose-panel">
-      <div class="detect" style="border:none;padding:0;background:none;">
+      <div class="detect bare">
         <div class="lbl">Nivel detección de los osos</div>
-        <div class="meter"><i style="width:100%;"></i></div>
+        <div class="meter"><i></i></div>
         <div class="scale">
           <span>Tranquilo</span>
           <span>→ Cerca</span>
-          <span class="now">→ ¡EN LA PUERTA!</span>
+          <span class="now now-high">→ ¡EN LA PUERTA!</span>
         </div>
       </div>
 
@@ -31,28 +31,30 @@
         NIVEL DE ALERTA: <b>CRÍTICO</b><br>(PÉRDIDA INMINENTE)
       </div>
 
-      <p style="color:var(--text-dim);">
-        Se acabó el tiempo o los osos te descubrieron.
+      <p class="cause">
+        {% if g_remaining <= 0 %}
+          <strong>Se acabó el tiempo.</strong> Los 120 minutos llegaron a 00:00.
+        {% else %}
+          <strong>Los osos te descubrieron.</strong> El nivel de detección llegó al 100 %
+          (sube con el tiempo, las pistas y cada bandera incorrecta).
+        {% endif %}
         Capturaste <b>{{ g_solved_n }}</b> de {{ g_total_ch }} banderas
         · <b>{{ g_score }}</b> / {{ g_total_pts }} PTS.
       </p>
 
-      <a href="{{ url_for('reset') }}" class="btn btn-outline btn-block"
-         style="margin-top:1.2rem;">Reiniciar escenario</a>
+      <a href="{{ url_for('reset') }}" class="btn btn-outline btn-block">Reiniciar escenario</a>
     </div>
 
-    <div class="lose-panel" style="border-color:var(--line);box-shadow:none;">
+    <div class="lose-panel quiet">
       <div class="card-title">🐻 Banderas capturadas</div>
       {% if g_solved %}
-        <ul style="list-style:none;display:grid;gap:0.4rem;">
+        <ul class="solved-list">
           {% for ch in CHALLENGES if ch.id in g_solved %}
-            <li style="font-family:var(--font-mono);font-size:0.85rem;color:var(--green);">
-              ✓ {{ ch.name }}
-            </li>
+            <li>✓ {{ ch.name }}</li>
           {% endfor %}
         </ul>
       {% else %}
-        <p style="color:var(--text-faint);font-style:italic;">Ninguna. Los osos volvieron demasiado pronto.</p>
+        <p class="none">Ninguna. Los osos volvieron demasiado pronto.</p>
       {% endif %}
     </div>
   </div>

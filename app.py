@@ -73,8 +73,8 @@ FLAGS = {
 CHALLENGE_PTS = {k: 75 for k in FLAGS}
 
 PHASES = [
-    {'id': 1, 'name': 'El Bosque',        'tag': 'Reconocimiento',   'color': 'green'},
-    {'id': 2, 'name': 'La Casa',          'tag': 'Explotación Web',   'color': 'gold'},
+    {'id': 1, 'name': 'La Cocina',        'tag': 'Reconocimiento',   'color': 'green'},
+    {'id': 2, 'name': 'La Sala de Estar', 'tag': 'Explotación Web',   'color': 'gold'},
     {'id': 3, 'name': 'Las Habitaciones', 'tag': 'Escalada',          'color': 'red'},
 ]
 

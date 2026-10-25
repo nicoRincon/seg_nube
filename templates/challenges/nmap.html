@@ -1,32 +1,83 @@
 {% extends 'base.html' %}
-{% from '_macros.html' import challenge_header, briefing, hints, flag_form, detect_bar, nav_buttons %}
+{% from '_macros.html' import briefing, hints, flag_form, detect_bar, nav_buttons %}
 {% block title %}La Sopa de Osito — Goldilocks CTF{% endblock %}
 
 {% block content %}
-<div class="wrap narrow">
-  {{ challenge_header(ch) }}
-  <p class="lead">"La sopa de Osito estaba justo a la temperatura correcta… si sabes en qué olla mirar."</p>
+{#
+  Escenario: static/img/libro.png (1536×1024, 3:2) como fondo fijo.
+  Los componentes reales se colocan encima en % de la imagen (ver la
+  sección STORYBOOK - NMAP de style.css). En móvil, la imagen queda como
+  cabecera y las zonas se apilan debajo.
+#}
+<article class="storybook-nmap" aria-labelledby="sbn-title">
+  <div class="sbn-stage">
+    <div class="sbn-scene">
+      <img class="sbn-bg" src="{{ url_for('static', filename='img/libro.png') }}" alt="" width="1536" height="1024">
 
-  {{ detect_bar(g_detection) }}
-  {{ briefing(ch) }}
+      {# Placa superior de la página izquierda #}
+      <h1 class="sbn-plaque" id="sbn-title">{{ ch.name }}</h1>
+      <p class="sbn-meta">
+        Fase {{ ch.phase }}{% for p in PHASES if p.id == ch.phase %} · {{ p.name }}{% endfor %} — {{ ch.category }}
+      </p>
 
-  <div class="card glow-green">
-    <div class="card-title">🖥️ Consola de reconocimiento (simulada)</div>
-    <p style="font-size:0.9rem;color:var(--text-dim);">
-      En el laboratorio real lanzarías <code>nmap</code> desde Kali contra
-      <code>192.168.56.0/24</code>. Esta consola reproduce la salida del host correcto:
+      {# Marco ilustrado. Si la imagen aún no existe, se oculta y queda el marco vacío. #}
+      <figure class="sbn-art">
+        <img src="{{ url_for('static', filename='img/capitulos/sopa_osito.png') }}"
+             alt="El caldero de Osito sobre una fogata en un claro del bosque nocturno"
+             onerror="this.hidden = true">
+      </figure>
+    </div>
+
+    {# En móvil la placa es pequeña: la fase y la categoría se muestran aquí (solo una de las dos líneas es visible) #}
+    <p class="sbn-meta-mobile">
+      Fase {{ ch.phase }}{% for p in PHASES if p.id == ch.phase %} · {{ p.name }}{% endfor %} — {{ ch.category }}
     </p>
-    <div class="code-block">$ nmap -sS -sV -p- 192.168.56.12
 
-{{ banner }}</div>
-    <p style="font-size:0.85rem;color:var(--text-faint);">
-      La bandera viaja en el banner del servicio del puerto no estándar.
-    </p>
+    <div class="sbn-zone sbn-zone--detect">{{ detect_bar(g_detection) }}</div>
+
+    {# Página izquierda, bajo el marco: narración y misión #}
+    <section class="sbn-zone sbn-zone--story" aria-label="Narración y misión">
+      <p class="sbn-tale">La sopa de Osito estaba justo a la temperatura correcta… si sabes en qué olla mirar.</p>
+      {{ briefing(ch) }}
+    </section>
+
+    {# Página derecha: interacción del desafío #}
+    <section class="sbn-zone sbn-zone--right" aria-label="Desafío" tabindex="0">
+      <div class="card glow-green storybook-console">
+        <div class="card-title"><img class="sbn-console-ico" src="{{ url_for('static', filename='img/storybook/console-rune.svg') }}" alt="" width="22" height="22"> Consola de reconocimiento (simulada)</div>
+        <p class="storybook-console-intro">
+          En el laboratorio real lanzarías <code>nmap</code> desde Kali contra
+          <code>192.168.56.0/24</code>. Esta consola reproduce la salida del host correcto:
+        </p>
+        <pre class="code-block storybook-console-output">$ nmap -sS -sV -p- 192.168.56.12
+
+{{ banner }}</pre>
+        <p class="storybook-console-note">
+          La bandera viaja en el banner del servicio del puerto no estándar.
+        </p>
+      </div>
+
+      {# Recompensa y coste de pistas: mismos valores que usan la misión y el sistema de pistas #}
+      <dl class="sbn-reward">
+        <div class="sbn-reward-item">
+          <img src="{{ url_for('static', filename='img/icons/star.svg') }}" alt="" width="24" height="24">
+          <dt>Recompensa</dt>
+          <dd>{{ ch.pts }} PTS</dd>
+        </div>
+        <div class="sbn-reward-item sbn-reward-item--cost">
+          <img src="{{ url_for('static', filename='img/icons/bulb.svg') }}" alt="" width="24" height="24">
+          <dt>Cada pista</dt>
+          <dd>−{{ hint_cost_min }} min · −{{ hint_cost_pts }} pts</dd>
+        </div>
+      </dl>
+
+      {{ flag_form(ch, g_solved) }}
+
+      <div class="sbn-divider" aria-hidden="true"></div>
+      {{ hints(ch, hint_cost_min, hint_cost_pts) }}
+    </section>
+
+    <div class="sbn-zone sbn-zone--nav">{{ nav_buttons(ch) }}</div>
   </div>
-
-  {{ hints(ch, hint_cost_min, hint_cost_pts) }}
-  {{ flag_form(ch, g_solved) }}
-
-  {{ nav_buttons(ch) }}
-</div>
+</article>
 {% endblock %}

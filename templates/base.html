@@ -11,31 +11,94 @@
 <body>
 
 {% if g_started %}
-<div class="topbar">
-<header class="hud">
-  <a href="{{ url_for('dashboard') }}" class="who">
-    <span class="avatar">🧒</span>
-    {{ g_username }} <small>({{ 'invitado' if g_guest else g_role }})</small>
+{# HUD ilustrado: madera + pergamino. #timer y #score los usa el script del final. #}
+<div class="gl-topbar">
+<header class="gl-hud">
+  <a href="{{ url_for('dashboard') }}" class="gl-brand" aria-label="Goldilocks CTF: volver al mapa">
+    <span class="gl-brand-name">Goldilocks</span>
+    <span class="gl-brand-sub">CTF <img src="{{ url_for('static', filename='img/icons/paw.svg') }}" alt="" width="18" height="18"></span>
   </a>
-  <button class="menu-btn" onclick="document.getElementById('dm').hidden = !document.getElementById('dm').hidden">☰</button>
-  <div class="timer" id="timer" data-remaining="{{ g_remaining }}">--:--</div>
-  <div class="score"><b id="score">{{ g_score }}</b> / {{ g_total_pts }} PTS</div>
-</header>
 
-<nav class="dropmenu" id="dm" hidden>
-  <a href="{{ url_for('dashboard') }}" class="{{ 'active' if request.endpoint=='dashboard' }}">Inicio</a>
-  <span class="sep">·</span>
-  <a href="{{ url_for('scoreboard') }}" class="{{ 'active' if request.endpoint=='scoreboard' }}">Marcador</a>
-  <span class="sep">·</span>
-  <a href="{{ url_for('reset') }}" onclick="return confirm('¿Reiniciar el escenario? Se pierde el progreso y el cronómetro vuelve a 120:00.')">Reiniciar</a>
-  <span class="sep">·</span>
-  <a href="{{ url_for('logout') }}">Salir</a>
-  <span class="lvl">
-    <a href="{{ url_for('set_level', level='low') }}"    class="{{ 'on-low'    if g_level=='low' }}">low</a>
-    <a href="{{ url_for('set_level', level='medium') }}" class="{{ 'on-medium' if g_level=='medium' }}">medium</a>
-    <a href="{{ url_for('set_level', level='high') }}"   class="{{ 'on-high'   if g_level=='high' }}">high</a>
-  </span>
-</nav>
+  <div class="gl-scroll">
+    <div class="gl-who" title="{{ 'invitado' if g_guest else g_role }}">
+      <span class="gl-avatar" aria-hidden="true">🧒</span>
+      <span class="gl-cell-txt"><small>{{ 'Invitado' if g_guest else g_role|capitalize }}</small><b>{{ g_username }}</b></span>
+    </div>
+    <div class="gl-stat">
+      <img class="gl-ico" src="{{ url_for('static', filename='img/icons/star.svg') }}" alt="" width="34" height="34">
+      <span class="gl-cell-txt"><small>Puntos</small><span><b id="score">{{ g_score }}</b> / {{ g_total_pts }}</span></span>
+    </div>
+    <div class="gl-stat gl-stat-time">
+      <img class="gl-ico" src="{{ url_for('static', filename='img/icons/stopwatch.svg') }}" alt="" width="40" height="40">
+      <span class="gl-cell-txt"><small>Tiempo</small><span class="gl-timer" id="timer" data-remaining="{{ g_remaining }}" role="timer" aria-label="Tiempo restante">--:--</span></span>
+    </div>
+    <div class="gl-stat">
+      <img class="gl-ico" src="{{ url_for('static', filename='img/icons/flag.svg') }}" alt="" width="34" height="34">
+      <span class="gl-cell-txt"><small>Banderas</small><b>{{ g_solved_n }} / {{ g_total_ch }}</b></span>
+    </div>
+    <div class="gl-stat">
+      <img class="gl-ico" src="{{ url_for('static', filename='img/icons/level.svg') }}" alt="" width="34" height="34">
+      <span class="gl-cell-txt"><small>Nivel</small><b class="gl-level-{{ g_level }}">{{ {'low': 'Bajo', 'medium': 'Medio', 'high': 'Alto'}.get(g_level, g_level) }}</b></span>
+    </div>
+  </div>
+
+  <nav class="gl-actions" aria-label="Menú del juego">
+    <a href="{{ url_for('dashboard') }}" class="gl-act {{ 'is-active' if request.endpoint == 'dashboard' }}"
+       {% if request.endpoint == 'dashboard' %}aria-current="page"{% endif %}>
+      <img src="{{ url_for('static', filename='img/icons/map.svg') }}" alt="" width="30" height="30"><span>Mapa</span>
+    </a>
+
+    <details class="gl-menu">
+      <summary class="gl-act"><img src="{{ url_for('static', filename='img/icons/backpack.svg') }}" alt="" width="30" height="30"><span>Inventario</span></summary>
+      <div class="gl-panel" role="group" aria-label="Inventario">
+        <div class="gl-panel-title">🎒 Banderas capturadas · {{ g_solved_n }}/{{ g_total_ch }}</div>
+        {% set bag = CHALLENGES|selectattr('id', 'in', g_solved)|list %}
+        {% if bag %}
+          <ul class="gl-bag">
+            {% for ch_item in bag %}
+              <li><a href="{{ url_for(ch_item.endpoint) }}"><span aria-hidden="true">{{ ch_item.icon }}</span> {{ ch_item.name }} <small>{{ ch_item.pts }} PTS</small></a></li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="gl-panel-empty">Tu mochila está vacía. Captura tu primera bandera en el bosque.</p>
+        {% endif %}
+      </div>
+    </details>
+
+    {% if ch is defined %}
+      <a href="#pistas" class="gl-act" data-hints-link>
+        <img src="{{ url_for('static', filename='img/icons/bulb.svg') }}" alt="" width="30" height="30"><span>Pistas</span>
+      </a>
+    {% else %}
+      <span class="gl-act is-disabled" aria-disabled="true" title="Las pistas se abren dentro de cada desafío">
+        <img src="{{ url_for('static', filename='img/icons/bulb.svg') }}" alt="" width="30" height="30"><span>Pistas</span>
+      </span>
+    {% endif %}
+
+    <a href="{{ url_for('scoreboard') }}" class="gl-act {{ 'is-active' if request.endpoint == 'scoreboard' }}"
+       {% if request.endpoint == 'scoreboard' %}aria-current="page"{% endif %} title="Diario: marcador de la aventura">
+      <img src="{{ url_for('static', filename='img/icons/book.svg') }}" alt="" width="30" height="30"><span>Diario</span>
+    </a>
+
+    <details class="gl-menu">
+      <summary class="gl-act"><img src="{{ url_for('static', filename='img/icons/gear.svg') }}" alt="" width="30" height="30"><span>Ajustes</span></summary>
+      <nav class="gl-panel" id="dm" aria-label="Ajustes">
+        <div class="gl-panel-title">⚙️ Dificultad</div>
+        <span class="lvl">
+          <a href="{{ url_for('set_level', level='low') }}"    class="{{ 'on-low'    if g_level=='low' }}">low</a>
+          <a href="{{ url_for('set_level', level='medium') }}" class="{{ 'on-medium' if g_level=='medium' }}">medium</a>
+          <a href="{{ url_for('set_level', level='high') }}"   class="{{ 'on-high'   if g_level=='high' }}">high</a>
+        </span>
+        <div class="gl-panel-title">🔄 Partida</div>
+        <a class="gl-panel-link" href="{{ url_for('reset') }}" onclick="return confirm('¿Reiniciar el escenario? Se pierde el progreso y el cronómetro vuelve a 120:00.')">Reiniciar escenario</a>
+      </nav>
+    </details>
+
+    <a href="{{ url_for('logout') }}" class="gl-act gl-act-exit">
+      <img src="{{ url_for('static', filename='img/icons/exit.svg') }}" alt="" width="30" height="30"><span>Salir</span>
+    </a>
+  </nav>
+</header>
 </div>
 {% endif %}
 
@@ -88,6 +151,41 @@
         if (d.over) window.location = "{{ url_for('lose') }}";
       }).catch(function () {});
   }, 20000);
+})();
+</script>
+<script>
+(function () {
+  // Menús del HUD (<details>): uno abierto a la vez; Esc o clic fuera los cierra
+  var menus = document.querySelectorAll('.gl-menu');
+  Array.prototype.forEach.call(menus, function (m) {
+    m.addEventListener('toggle', function () {
+      if (!m.open) return;
+      Array.prototype.forEach.call(menus, function (o) { if (o !== m) o.open = false; });
+    });
+  });
+  function closeMenus(restore) {
+    Array.prototype.forEach.call(menus, function (m) {
+      if (m.open) { m.open = false; if (restore) m.querySelector('summary').focus(); }
+    });
+  }
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeMenus(true); });
+  document.addEventListener('click', function (e) { if (!e.target.closest('.gl-menu')) closeMenus(false); });
+
+  // Pistas: apunta al bloque de pistas del desafío (macro hints) sin modificarlo
+  var link = document.querySelector('[data-hints-link]');
+  if (link) {
+    var list = document.querySelector('.hint-list');
+    var box = list && (list.closest('.card') || list);
+    if (box) {
+      if (!box.id) box.id = 'pistas';
+      link.href = '#' + box.id;
+    } else {
+      link.classList.add('is-disabled');
+      link.setAttribute('aria-disabled', 'true');
+      link.removeAttribute('href');
+      link.title = 'Este desafío no tiene pistas';
+    }
+  }
 })();
 </script>
 {% endif %}

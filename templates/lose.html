@@ -2,59 +2,61 @@
 {% block title %}¡Los osos están cerca! — Goldilocks CTF{% endblock %}
 
 {% block content %}
-<div class="lose">
-  <div class="warns">
-    <span style="top:6%;left:4%;">⚠</span>
-    <span style="top:12%;left:12%;font-size:1.3rem;">❗</span>
-    <span style="top:4%;right:6%;">❗</span>
-    <span style="top:20%;right:3%;font-size:1.5rem;">⚡</span>
-    <span style="bottom:10%;left:3%;font-size:1.6rem;">⚠</span>
-    <span style="bottom:6%;right:8%;">⚡</span>
-    <span style="bottom:16%;right:14%;font-size:1.2rem;">❗</span>
-  </div>
-
-  <h1>¡LOS TRES OSOS ESTÁN CERCA!</h1>
-
-  <div class="lose-grid">
-    <div class="lose-panel">
-      <div class="detect" style="border:none;padding:0;background:none;">
-        <div class="lbl">Nivel detección de los osos</div>
-        <div class="meter"><i style="width:100%;"></i></div>
-        <div class="scale">
-          <span>Tranquilo</span>
-          <span>→ Cerca</span>
-          <span class="now">→ ¡EN LA PUERTA!</span>
-        </div>
-      </div>
-
-      <div class="alert-crit">
-        NIVEL DE ALERTA: <b>CRÍTICO</b><br>(PÉRDIDA INMINENTE)
-      </div>
-
-      <p style="color:var(--text-dim);">
-        Se acabó el tiempo o los osos te descubrieron.
-        Capturaste <b>{{ g_solved_n }}</b> de {{ g_total_ch }} banderas
-        · <b>{{ g_score }}</b> / {{ g_total_pts }} PTS.
-      </p>
-
-      <a href="{{ url_for('reset') }}" class="btn btn-outline btn-block"
-         style="margin-top:1.2rem;">Reiniciar escenario</a>
+{#
+  Escena: static/img/game_over_osos.png (1686×933) como fondo fijo.
+  Los paneles reales se colocan en % sobre las tablas de madera y pergamino
+  de la derecha (ver la sección DERROTA - OSOS de style.css). En móvil, la
+  imagen queda como cabecera y los paneles se apilan debajo.
+#}
+{% set lose_by_time = g_remaining <= 0 %}
+{% set lose_by_detect = g_detection >= 100 %}
+<section class="lose-scene" aria-labelledby="lose-title">
+  <div class="lose-stage">
+    <div class="lose-art">
+      <img class="lose-bg" src="{{ url_for('static', filename='img/game_over_osos.png') }}"
+           alt="Los tres osos han vuelto a su cabaña y miran enojados a Ricitos de Oro, que ha caído al suelo asustada."
+           width="1686" height="933">
     </div>
 
-    <div class="lose-panel" style="border-color:var(--line);box-shadow:none;">
-      <div class="card-title">🐻 Banderas capturadas</div>
+    {# Pergamino superior: resumen de la partida #}
+    <div class="lose-summary">
+      <h1 class="lose-title" id="lose-title">¡Los tres osos están cerca!</h1>
+      <p class="lose-cause">
+        {# La detección también llega al 100 % cuando se agota el tiempo: el tiempo tiene prioridad #}
+        {% if lose_by_time %}Se acabó el tiempo.
+        {% elif lose_by_detect %}Los osos te descubrieron.
+        {% else %}Se acabó el tiempo o los osos te descubrieron.{% endif %}
+        <span class="lose-alert">Nivel de alerta: <b>crítico</b></span>
+      </p>
+      <dl class="lose-stats">
+        <div><dt>Jugador</dt><dd>{{ g_username }}</dd></div>
+        <div><dt>Puntos</dt><dd>{{ g_score }} / {{ g_total_pts }}</dd></div>
+        <div><dt>Banderas</dt><dd>{{ g_solved_n }} / {{ g_total_ch }}</dd></div>
+        <div><dt>Tiempo restante</dt><dd>{{ '%02d:%02d'|format(g_remaining // 60, g_remaining % 60) }}</dd></div>
+        <div><dt>Detección</dt><dd>{{ g_detection }} %</dd></div>
+      </dl>
+    </div>
+
+    {# Tabla central: cabecera de la lista #}
+    <h2 class="lose-list-head">Banderas capturadas <span>{{ g_solved_n }} / {{ g_total_ch }}</span></h2>
+
+    {# Pergamino inferior: lista dinámica de banderas capturadas #}
+    <div class="lose-list" tabindex="0" aria-label="Banderas capturadas">
       {% if g_solved %}
-        <ul style="list-style:none;display:grid;gap:0.4rem;">
+        <ul>
           {% for ch in CHALLENGES if ch.id in g_solved %}
-            <li style="font-family:var(--font-mono);font-size:0.85rem;color:var(--green);">
-              ✓ {{ ch.name }}
-            </li>
+            <li><span class="lose-check" aria-hidden="true">✓</span> {{ ch.name }} <small>{{ ch.category }}</small></li>
           {% endfor %}
         </ul>
       {% else %}
-        <p style="color:var(--text-faint);font-style:italic;">Ninguna. Los osos volvieron demasiado pronto.</p>
+        <p class="lose-empty">Ninguna. Los osos volvieron demasiado pronto.</p>
       {% endif %}
     </div>
+
+    {# Tablón inferior: reiniciar #}
+    <div class="lose-actions">
+      <a href="{{ url_for('reset') }}" class="lose-reset">Reiniciar escenario</a>
+    </div>
   </div>
-</div>
+</section>
 {% endblock %}

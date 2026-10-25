@@ -1,56 +1,290 @@
 {% extends 'base.html' %}
 {% from '_macros.html' import detect_bar %}
-{% block title %}Panel — Goldilocks CTF{% endblock %}
+{% block title %}Mapa del Bosque — Goldilocks CTF{% endblock %}
 
 {% block content %}
-<div class="wrap">
+{# ── Ubicación de cada desafío sobre mapa_bosque.png (1536×1024) ──
+   x, y en % del ancho/alto de la ilustración; place = lugar del paisaje.
+   Un reto nuevo sin entrada aquí aparece en "Otros lugares del bosque". #}
+{% set MAP_SPOTS = {
+  'nmap':          {'x': 33,   'y': 84, 'place': 'El inicio del sendero'},
+  'dork':          {'x': 30,   'y': 57, 'place': 'El puente de la cascada'},
+  'dirb':          {'x': 14.5, 'y': 42, 'place': 'La cueva de cristales'},
+  'wireshark':     {'x': 36.5, 'y': 24, 'place': 'El poste indicador'},
+  'sqli_login':    {'x': 55,   'y': 26, 'place': 'La casa de los osos'},
+  'sqli_medium':   {'x': 47,   'y': 54, 'place': 'La gruta violeta'},
+  'xss_reflected': {'x': 57.5, 'y': 65, 'place': 'El sendero del río'},
+  'xss_stored':    {'x': 67,   'y': 49, 'place': 'El comedor de los osos'},
+  'webshell':      {'x': 85,   'y': 13, 'place': 'La casa del árbol'},
+  'metasploit':    {'x': 91,   'y': 39, 'place': 'La habitación de arriba'},
+  'privesc':       {'x': 85,   'y': 59, 'place': 'La habitación del osito'},
+  'stego':         {'x': 73,   'y': 79, 'place': 'El portal mágico'},
+} %}
+{# ── Estilo visual por fase: única fuente para etiquetas, iconos y color ──
+   label  = posición de la etiqueta sobre el mapa (% de la ilustración); none = sin etiqueta
+   icon   = icono del letrero lateral (static/img/icons/<icon>.svg)
+   accent = color de acento de la etiqueta y el letrero
+   La fase 4 queda preparada (posición provisional) y solo se muestra cuando
+   exista en PHASES. Una fase sin entrada usa PHASE_STYLE_DEFAULT. #}
+{% set PHASE_STYLE = {
+  1: {'label': {'x': 22, 'y': 4},  'icon': 'phase-tree',  'accent': 'rgba(141, 255, 200, .55)'},
+  2: {'label': {'x': 47, 'y': 5},  'icon': 'phase-house', 'accent': 'rgba(255, 210, 122, .65)'},
+  3: {'label': {'x': 72, 'y': 4},  'icon': 'phase-room',  'accent': 'rgba(255, 146, 159, .6)'},
+  4: {'label': {'x': 80, 'y': 92}, 'icon': 'exit',        'accent': 'rgba(184, 160, 255, .65)'},
+} %}
+{% set PHASE_STYLE_DEFAULT = {'label': none, 'icon': 'map', 'accent': 'rgba(142, 202, 255, .45)'} %}
+{% set phase_names = {} %}
+{% for phase in PHASES %}{% set _ = phase_names.update({phase.id: phase.name}) %}{% endfor %}
 
-  <h1 class="bigtitle">GOLDILOCKS CTF</h1>
-  <p class="subtitle">La casa de los tres osos · 12 banderas · 3 fases</p>
+{# Primer desafío pendiente según el orden de juego = recomendado #}
+{% set ns = namespace(next_id=None, next_phase=None) %}
+{% for ch in CHALLENGES %}
+  {% if ns.next_id is none and ch.id not in g_solved %}{% set ns.next_id = ch.id %}{% set ns.next_phase = ch.phase %}{% endif %}
+{% endfor %}
 
-  {{ detect_bar(g_detection) }}
+<div class="forest-map">
+  {# Franja compacta: puntos, tiempo, banderas y nivel ya están en el HUD de base.html #}
+  <header class="map-status" aria-label="Estado del bosque">
+    <h1 class="map-status-title"><span aria-hidden="true">✦</span> El bosque de Goldilocks</h1>
+    <div class="map-status-detect">{{ detect_bar(g_detection) }}</div>
+    <ul class="map-legend" aria-label="Leyenda del mapa">
+      <li><img class="map-legend-ico" src="{{ url_for('static', filename='img/icons/map-lock.svg') }}" alt="" width="16" height="16">Pendiente</li>
+      <li><span class="dot dot-next"></span>Recomendado</li>
+      <li><img class="map-legend-ico" src="{{ url_for('static', filename='img/icons/map-check.svg') }}" alt="" width="16" height="16">Capturada</li>
+    </ul>
+  </header>
 
-  <div class="stats">
-    <div class="stat"><div class="v">{{ g_solved_n }}</div><div class="k">Banderas</div></div>
-    <div class="stat"><div class="v">{{ g_total_ch }}</div><div class="k">Totales</div></div>
-    <div class="stat"><div class="v">{{ g_score }}</div><div class="k">Puntos</div></div>
-    <div class="stat"><div class="v" style="font-size:1.2rem;color:var(--{{ 'green' if g_level=='low' else 'orange' if g_level=='medium' else 'red' }});">{{ g_level|upper }}</div><div class="k">Nivel</div></div>
-  </div>
-
-  {% set card_colors = {1:'c-green', 2:'c-gold', 3:'c-red'} %}
-  {% for phase in PHASES %}
-    <div class="phase-head phase-{{ phase.color }}">
-      Fase {{ phase.id }} — {{ phase.name }}
-      <span class="tag">{{ phase.tag }}</span>
-    </div>
-    <div class="grid">
-      {% for ch in CHALLENGES if ch.phase == phase.id %}
-        <a href="{{ url_for(ch.endpoint) }}"
-           class="ncard {{ card_colors[phase.id] }} {{ 'solved' if ch.id in g_solved }}">
-          <div class="ic">{{ ch.icon }}</div>
-          <div class="nm">{{ ch.name }}</div>
-          <div class="ct">{{ ch.category }}</div>
-          <div class="ds">{{ ch.brief | striptags | truncate(96) }}</div>
-          <div class="ft">
-            <span class="pts">{{ ch.pts }} PTS</span>
-            <span class="st {{ 'done' if ch.id in g_solved }}">
-              {{ '✓ capturada' if ch.id in g_solved else '○ pendiente' }}
+  <div class="map-frame">
+    <p class="map-swipe" aria-hidden="true" hidden>↔ Desliza para explorar el bosque</p>
+    <div class="map-layout">
+    {# Menú lateral: letreros de fase. Resaltan los marcadores de su fase (no navegan). #}
+    <nav class="phase-signs" aria-label="Fases de la aventura">
+      {% for phase in PHASES %}
+        {% set in_phase = CHALLENGES|selectattr('phase', 'equalto', phase.id)|list %}
+        {% set done = in_phase|selectattr('id', 'in', g_solved)|list|length %}
+        {% set ps = PHASE_STYLE.get(phase.id, PHASE_STYLE_DEFAULT) %}
+        <button type="button"
+                class="phase-sign {{ 'is-current' if phase.id == ns.next_phase }} {{ 'is-complete' if in_phase and done == in_phase|length }}"
+                style="--phase-accent: {{ ps.accent }}"
+                data-phase="{{ phase.id }}" aria-pressed="false"
+                aria-label="Fase {{ phase.id }}, {{ phase.name }}: {{ done }} de {{ in_phase|length }} banderas{{ ', en curso' if phase.id == ns.next_phase }}. Resaltar en el mapa">
+          <span class="phase-sign-board">
+            <img class="phase-sign-ico" src="{{ url_for('static', filename='img/icons/' ~ ps.icon ~ '.svg') }}" alt="" width="44" height="44">
+            <span class="phase-sign-txt">
+              <small>Fase {{ phase.id }}{% if phase.id == ns.next_phase %} · <em>en curso</em>{% endif %}</small>
+              <strong>{{ phase.name }}</strong>
+              <span class="phase-sign-prog">{{ '✓ ' if in_phase and done == in_phase|length }}{{ done }}/{{ in_phase|length }} banderas</span>
             </span>
-          </div>
-        </a>
+          </span>
+        </button>
       {% endfor %}
-    </div>
-  {% endfor %}
+    </nav>
+    <div class="map-viewport">
+      <main class="map-stage" aria-label="Mapa de desafíos Goldilocks CTF">
+        <img class="map-img"
+             src="{{ url_for('static', filename='img/mapa_bosque.png') }}"
+             width="1536" height="1024" decoding="async"
+             alt="Mapa ilustrado del bosque nocturno de los tres osos: senderos, río, cueva de cristales, la casa, la casa del árbol y las habitaciones.">
 
-  <div class="card" style="margin-top:2.4rem;">
-    <div class="card-title">📖 La historia</div>
-    <p style="font-style:italic;color:var(--text-dim);">
-      "Ricitos de Oro encontró la casa vacía. Primero cruzó <b>el bosque</b> siguiendo
-      el rastro de los osos (reconocimiento). Luego entró en <b>la casa</b> y probó las
-      camas (explotación web). Al final subió a <b>las habitaciones</b>, donde los osos
-      empezaban a despertar (escalada de privilegios)… y tuvo que escapar por la ventana."
-    </p>
+        {% for phase in PHASES %}
+          {% set ps = PHASE_STYLE.get(phase.id, PHASE_STYLE_DEFAULT) %}
+          {% if ps.label %}
+            <span class="map-phase-label"
+                  style="--x:{{ ps.label.x }}%; --y:{{ ps.label.y }}%; --phase-accent: {{ ps.accent }}">
+              Fase {{ phase.id }} · {{ phase.name }}
+            </span>
+          {% endif %}
+        {% endfor %}
+
+        <ol class="map-spots">
+          {% for ch in CHALLENGES if ch.id in MAP_SPOTS %}
+            {% set spot = MAP_SPOTS[ch.id] %}
+            {% set solved = ch.id in g_solved %}
+            <li class="map-spot-item" style="--x:{{ spot.x }}%; --y:{{ spot.y }}%">
+              <a href="{{ url_for(ch.endpoint) }}"
+                 class="map-spot phase-{{ ch.phase }} {{ 'is-solved' if solved else 'is-pending' }} {{ 'is-next' if ch.id == ns.next_id }} {{ 'is-edge-right' if spot.x > 78 }}"
+                 data-name="{{ ch.name }}"
+                 data-category="{{ ch.category }}"
+                 data-pts="{{ ch.pts }}"
+                 data-place="{{ spot.place }}"
+                 data-phase="Fase {{ ch.phase }} · {{ phase_names.get(ch.phase, '') }}"
+                 data-brief="{{ ch.brief|striptags|truncate(120) }}"
+                 data-state="{{ 'solved' if solved else ('next' if ch.id == ns.next_id else 'pending') }}"
+                 aria-label="{{ ch.name }}, {{ spot.place }}. {{ ch.pts }} puntos. {{ 'Capturada' if solved else 'Pendiente' }}{{ '. Recomendado' if ch.id == ns.next_id }}">
+                {# Pendiente: placa con candado, número, nombre y categoría.
+                   Superado: insignia verde (el nombre aparece al pasar el ratón o con el foco). #}
+                <span class="map-spot-pin" aria-hidden="true">
+                  <img src="{{ url_for('static', filename='img/icons/' ~ ('map-check.svg' if solved else 'map-lock.svg')) }}" alt="" width="40" height="40">
+                </span>
+                <span class="map-spot-label" aria-hidden="true">
+                  <span class="map-spot-title">{{ loop.index }}.<span class="map-spot-name"> {{ ch.name }}</span></span>
+                  {% if not solved %}<span class="map-spot-cat">{{ ch.category }}</span>{% endif %}
+                </span>
+              </a>
+            </li>
+          {% endfor %}
+        </ol>
+      </main>
+    </div>
+    </div>
+
+    <div class="map-card" id="map-card" role="dialog" aria-labelledby="map-card-title" hidden>
+      <button type="button" class="map-card-close" aria-label="Cerrar ficha">✕</button>
+      <div class="map-card-phase"></div>
+      <h2 id="map-card-title" class="map-card-title"></h2>
+      <div class="map-card-place"></div>
+      <p class="map-card-brief"></p>
+      <div class="map-card-meta">
+        <span class="map-card-cat"></span>
+        <span class="map-card-pts"></span>
+      </div>
+      <div class="map-card-state"></div>
+      <a class="btn btn-cyan map-card-go" href="#">Entrar al desafío →</a>
+    </div>
   </div>
 
+  {% set extra = CHALLENGES|rejectattr('id', 'in', MAP_SPOTS)|list %}
+  {% if extra %}
+    <section class="map-extra" aria-labelledby="map-extra-title">
+      <h2 id="map-extra-title">Otros lugares del bosque</h2>
+      <ul>
+        {% for ch in extra %}
+          <li>
+            <a href="{{ url_for(ch.endpoint) }}" class="{{ 'is-solved' if ch.id in g_solved }}">
+              <span aria-hidden="true">{{ ch.icon }}</span> {{ ch.name }}
+              <small>{{ ch.category }} · {{ ch.pts }} PTS · {{ 'capturada' if ch.id in g_solved else 'pendiente' }}</small>
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+
+  <p class="map-story">
+    🗝️ Ricitos ya ha dejado huellas por todo el bosque. Captura las banderas, sigue las pistas y encuentra una ruta de escape antes de que los osos regresen.
+    <em>«No sigas solamente el camino marcado: observa, investiga y descubre lo que otros dejaron oculto.»</em>
+  </p>
 </div>
+
+<script>
+(function () {
+  var frame = document.querySelector('.map-frame');
+  var card = document.getElementById('map-card');
+  if (!frame || !card) return;
+
+  var spots = frame.querySelectorAll('.map-spot');
+  var stateText = {
+    solved: '✓ Bandera capturada',
+    next: '✧ Recomendado: tu siguiente parada',
+    pending: '○ Por descubrir'
+  };
+  var current = null;
+
+  function q(sel) { return card.querySelector(sel); }
+
+  function place(spot) {
+    var f = frame.getBoundingClientRect();
+    var s = spot.querySelector('.map-spot-pin').getBoundingClientRect();
+    var cw = card.offsetWidth, ch = card.offsetHeight, gap = 14;
+    var cx = s.left + s.width / 2 - f.left;
+    var cy = s.top + s.height / 2 - f.top;
+    var toLeft = cx > f.width / 2;
+    var left = toLeft ? s.left - f.left - cw - gap : s.right - f.left + gap;
+    var top = cy - ch / 2;
+    left = Math.max(8, Math.min(left, f.width - cw - 8));
+    top = Math.max(8, Math.min(top, f.height - ch - 8));
+    card.style.setProperty('--card-x', left + 'px');
+    card.style.setProperty('--card-y', top + 'px');
+    // La flecha de la ficha apunta al marcador
+    card.dataset.side = toLeft ? 'left' : 'right';
+    card.style.setProperty('--arrow-y', Math.max(22, Math.min(cy - top, ch - 22)) + 'px');
+  }
+
+  function open(spot) {
+    if (current) current.setAttribute('aria-expanded', 'false');
+    current = spot;
+    var d = spot.dataset;
+    q('.map-card-phase').textContent = d.phase;
+    q('.map-card-title').textContent = d.name;
+    q('.map-card-place').textContent = '📍 ' + d.place;
+    q('.map-card-brief').textContent = d.brief;
+    q('.map-card-cat').textContent = d.category;
+    q('.map-card-pts').textContent = d.pts + ' PTS';
+    q('.map-card-state').textContent = stateText[d.state] || '';
+    card.dataset.state = d.state;
+    q('.map-card-go').href = spot.href;
+    q('.map-card-go').textContent = d.state === 'solved' ? 'Volver al desafío →' : 'Entrar al desafío →';
+    card.hidden = false;
+    place(spot);
+    spot.setAttribute('aria-expanded', 'true');
+    q('.map-card-go').focus({ preventScroll: true });
+  }
+
+  function close(restoreFocus) {
+    if (card.hidden) return;
+    card.hidden = true;
+    if (current) {
+      current.setAttribute('aria-expanded', 'false');
+      if (restoreFocus) current.focus({ preventScroll: true });
+    }
+    current = null;
+  }
+
+  Array.prototype.forEach.call(spots, function (spot) {
+    spot.setAttribute('aria-haspopup', 'dialog');
+    spot.setAttribute('aria-expanded', 'false');
+    spot.setAttribute('aria-controls', 'map-card');
+    spot.addEventListener('click', function (e) {
+      // Ctrl/Cmd/Shift/clic central: comportamiento normal del enlace
+      if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey || e.button !== 0) return;
+      e.preventDefault();
+      if (current === spot && !card.hidden) close(true);
+      else open(spot);
+    });
+  });
+
+  q('.map-card-close').addEventListener('click', function () { close(true); });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') close(true);
+  });
+
+  document.addEventListener('click', function (e) {
+    if (!card.hidden && !card.contains(e.target) && !e.target.closest('.map-spot')) close(false);
+  });
+
+  // Pantallas estrechas: mostrar la indicación de deslizar y centrar el reto recomendado
+  var vp = frame.querySelector('.map-viewport');
+  var swipe = frame.querySelector('.map-swipe');
+  function checkOverflow() {
+    var overflows = vp.scrollWidth > vp.clientWidth + 1;
+    swipe.hidden = !overflows;
+    return overflows;
+  }
+  var next = frame.querySelector('.map-spot.is-next');
+  if (checkOverflow() && next) {
+    var item = next.parentNode;
+    vp.scrollLeft = item.offsetLeft - vp.clientWidth / 2;
+  }
+
+  // Letreros de fase: resaltan sus marcadores; un segundo clic quita el resaltado
+  var signs = document.querySelectorAll('.phase-sign');
+  Array.prototype.forEach.call(signs, function (sign) {
+    sign.addEventListener('click', function () {
+      var on = sign.getAttribute('aria-pressed') !== 'true';
+      Array.prototype.forEach.call(signs, function (s) { s.setAttribute('aria-pressed', 'false'); });
+      if (on) sign.setAttribute('aria-pressed', 'true');
+      Array.prototype.forEach.call(spots, function (spot) {
+        spot.classList.toggle('is-dimmed', on && !spot.classList.contains('phase-' + sign.dataset.phase));
+      });
+    });
+  });
+
+  window.addEventListener('resize', function () {
+    checkOverflow();
+    if (current && !card.hidden) place(current);
+  });
+  vp.addEventListener('scroll', function () { if (current && !card.hidden) place(current); }, { passive: true });
+})();
+</script>
 {% endblock %}

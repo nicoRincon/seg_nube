@@ -1,31 +1,54 @@
 {% extends 'base.html' %}
-{% block title %}Goldilocks CTF{% endblock %}
+{% block title %}Goldilocks CTF · El bosque encantado{% endblock %}
 
 {% block content %}
-<div class="landing">
-  <div class="box">
-    <div class="bear">🐻🐻🐻</div>
-    <h1 class="bigtitle" style="margin-top:0.4rem;">GOLDILOCKS CTF</h1>
-    <p class="subtitle" style="margin-bottom:1.6rem;">
-      Ricitos de Oro entró en la casa de los tres osos. Captura las 12 banderas
-      —Bosque, Casa y Habitaciones— antes de que regresen.
-    </p>
+{#
+  Escena: static/img/login_bosque.png (1536×1024, 3:2) como fondo fijo.
+  El formulario real se coloca en % sobre el claro iluminado del arco del árbol
+  (ver la sección LOGIN - BOSQUE de style.css). En móvil, la imagen queda como
+  cabecera y el formulario en un bloque debajo.
+#}
+<section class="login-scene" aria-labelledby="login-title">
+  <div class="login-stage">
+    <div class="login-art">
+      <img class="login-bg" src="{{ url_for('static', filename='img/login_bosque.png') }}"
+           alt="Ricitos de Oro entra al bosque de noche con una tableta GPS, junto a un letrero con tres osos enojados; al fondo, un sendero iluminado lleva a la cabaña."
+           width="1536" height="1024">
+    </div>
 
-    <form method="POST" action="{{ url_for('start') }}">
-      <div class="field" style="text-align:left;">
-        <label for="username">Nombre de jugador</label>
-        <input type="text" id="username" name="username"
-               placeholder="ricitos" autocomplete="off">
-      </div>
-      <button type="submit" class="btn btn-cyan btn-block" style="margin-top:0.4rem;">
-        ▶ Empezar partida (120:00)
-      </button>
-    </form>
+    {# Claro iluminado del arco: identidad y formulario #}
+    <div class="login-panel">
+      <p class="login-eyebrow">Una aventura de ciberseguridad</p>
+      <h1 class="login-title" id="login-title">
+        <span class="login-title-name">Goldilocks</span>
+        <span class="login-title-sub">Capture the Flag <img src="{{ url_for('static', filename='img/icons/paw.svg') }}" alt="" width="18" height="18"></span>
+      </h1>
+      <p class="login-intro">
+        El bosque guarda secretos y la casa de los tres osos esconde <strong>12 banderas</strong>.
+        Explora, investiga y resuelve los desafíos antes de que regresen sus dueños.
+      </p>
 
-    <p style="font-size:0.8rem;color:var(--text-faint);margin-top:1.3rem;">
-      Se juega como <b>invitado</b>. 3 fases · 900 puntos ·
-      cada pista cuesta −5&nbsp;min y −25&nbsp;pts.
-    </p>
+      <form class="login-form" method="POST" action="{{ url_for('start') }}">
+        <label for="username">¿Cómo te llamas, explorador?</label>
+        <input type="text" id="username" name="username" placeholder="Escribe tu nombre…"
+               autocomplete="nickname" maxlength="40" aria-describedby="player-help">
+        <button type="submit" class="login-start">
+          <span>Entrar al bosque</span><span aria-hidden="true">➜</span>
+        </button>
+        <p id="player-help" class="login-help">Entrarás como invitado. No necesitas crear una cuenta.</p>
+      </form>
+    </div>
+
+    {# Sendero iluminado: reglas de la partida #}
+    <div class="login-info">
+      <ul class="login-facts" aria-label="Características de la partida">
+        <li><b aria-hidden="true">◷</b> 120 minutos</li>
+        <li><b aria-hidden="true">⚑</b> 12 banderas</li>
+        <li><b aria-hidden="true">✧</b> 900 puntos</li>
+        <li><b aria-hidden="true">◇</b> 3 fases</li>
+      </ul>
+      <p class="login-warning">Cada pista revelada resta 5 minutos y 25 puntos. Elige tus pistas con cuidado.</p>
+    </div>
   </div>
-</div>
+</section>
 {% endblock %}

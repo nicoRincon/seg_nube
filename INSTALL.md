@@ -32,6 +32,25 @@ python setup_db.py          # vuelve a ejecutarlo para embeber la bandera
 python app.py               # -> http://localhost:5000
 ```
 
+## Ejecutar con Docker
+
+Necesitas tener Docker Desktop (Windows/macOS) o Docker Engine con Docker Compose
+instalado.
+
+```bash
+docker compose up --build
+```
+
+Abre <http://localhost:5000>. Para detener la aplicación, pulsa `Ctrl+C` o ejecuta
+`docker compose down`. La base de datos y los archivos subidos se conservan en
+volúmenes de Docker al detener o actualizar el contenedor. Para borrar esos datos
+y volver a iniciar con la base de datos original del proyecto, ejecuta
+`docker compose down -v`.
+
+Esta plataforma contiene vulnerabilidades intencionales para un CTF. Docker
+Compose solo publica el puerto en `localhost`; no cambies esa configuración ni
+expongas el servicio a Internet o a redes no confiables.
+
 En la portada se entra **como invitado** ("ricitos") y arranca el cronómetro.
 Cada pista desbloqueada cuesta **−5 min** y **−25 pts**. Si el cronómetro llega a
 `00:00` o el medidor de detección llega al 100 %, aparece la pantalla

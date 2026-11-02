@@ -30,7 +30,7 @@ app = Flask(__name__)
 app.secret_key = 'osito123'
 
 BASE_DIR   = os.path.dirname(os.path.abspath(__file__))
-DB_PATH    = os.path.join(BASE_DIR, 'goldilocks.db')
+DB_PATH    = os.environ.get('GOLDILOCKS_DB_PATH', os.path.join(BASE_DIR, 'goldilocks.db'))
 UPLOAD_DIR = os.path.join(BASE_DIR, 'uploads')
 FLAGS_DIR  = os.path.join(BASE_DIR, 'flags')
 DOCS_DIR   = os.path.join(BASE_DIR, 'static', 'docs')

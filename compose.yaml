@@ -1,0 +1,13 @@
+services:
+  app:
+    build: .
+    ports:
+      - "127.0.0.1:5000:5000"
+    volumes:
+      - goldilocks_data:/data
+      - uploaded_files:/app/uploads
+    restart: unless-stopped
+
+volumes:
+  goldilocks_data:
+  uploaded_files:

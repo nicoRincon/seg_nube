@@ -44,10 +44,25 @@
     {# Página derecha: interacción del desafío #}
     <section class="sbn-zone sbn-zone--right" aria-label="Desafío" tabindex="0">
       <div class="card glow-green storybook-console">
+        <div class="card-title"><img class="sbn-console-ico" src="{{ url_for('static', filename='img/storybook/console-rune.svg') }}" alt="" width="22" height="22"> Laboratorio real</div>
+        <p class="storybook-console-intro">
+          Si tienes el laboratorio montado (Kali + Metasploitable2 en la red
+          host-only), el puerto <code>1337</code> está realmente abierto. Escanéalo
+          desde Kali:
+        </p>
+        <pre class="code-block storybook-console-output">$ nmap -sV -p 1337 {{ lab_ip }}
+$ nc {{ lab_ip }} 1337</pre>
+        <p class="storybook-console-note">
+          Si tu Metasploitable2 tomó otra IP por DHCP, revisa con <code>ifconfig</code>
+          dentro de esa VM.
+        </p>
+      </div>
+
+      <div class="card glow-green storybook-console">
         <div class="card-title"><img class="sbn-console-ico" src="{{ url_for('static', filename='img/storybook/console-rune.svg') }}" alt="" width="22" height="22"> Consola de reconocimiento (simulada)</div>
         <p class="storybook-console-intro">
-          En el laboratorio real lanzarías <code>nmap</code> desde Kali contra
-          <code>192.168.56.0/24</code>. Esta consola reproduce la salida del host correcto:
+          ¿Sin laboratorio a mano? Esta consola reproduce la misma salida que
+          verías al escanear el host correcto:
         </p>
         <pre class="code-block storybook-console-output">$ nmap -sS -sV -p- 192.168.56.12
 

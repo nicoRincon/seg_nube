@@ -11,10 +11,30 @@
   {{ briefing(ch) }}
 
   <div class="card glow-green">
-    <div class="card-title">🛰️ Captura de red</div>
+    <div class="card-title">🛰️ Laboratorio real</div>
     <p style="font-size:0.9rem;color:var(--text-dim);">
-      Descarga la captura y ábrela en Wireshark (o léela como texto). Busca la
-      petición HTTP con credenciales en texto claro.
+      Si tienes el laboratorio montado, Metasploitable2 ({{ lab_ip }}) envía un
+      "check-in" HTTP con credenciales en texto claro cada 30 segundos hacia tu
+      Kali. Captúralo con Wireshark:
+    </p>
+    <div class="code-block">
+# 1) En Kali, deja algo escuchando para recibir el check-in:
+$ while true; do nc -l -p 8080 -q 1 2>/dev/null; done
+
+# 2) Captura en Wireshark la interfaz con tu IP de la red host-only
+#    (filtro: http.authorization) y espera hasta 30s.
+
+# 3) Follow → HTTP Stream, copia el valor de "Authorization: Basic ..."
+#    y decodifícalo:
+$ echo '&lt;valor_base64&gt;' | base64 -d</div>
+  </div>
+
+  <div class="card glow-green">
+    <div class="card-title">🛰️ Captura de red (simulada)</div>
+    <p style="font-size:0.9rem;color:var(--text-dim);">
+      ¿Sin laboratorio a mano? Descarga esta captura de ejemplo y ábrela en
+      Wireshark (o léela como texto). Busca la petición HTTP con credenciales
+      en texto claro.
     </p>
     <a href="{{ url_for('wireshark_capture') }}" class="btn btn-outline">
       ⬇ Descargar captura_bosque.pcap

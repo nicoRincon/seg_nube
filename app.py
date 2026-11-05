@@ -48,6 +48,10 @@ HINT_PENALTY_P = 25           # -25 PTS por pista
 WRONG_DETECT   = 8            # +8% detección por flag incorrecta
 TOTAL_POINTS   = 900
 
+# IP real de Metasploitable2 en el laboratorio host-only (retos 1, 4 y 10).
+# Ajusta este valor si la VM toma otra IP por DHCP al recrearla.
+LAB_TARGET_IP = os.environ.get('GOLDILOCKS_LAB_IP', '192.168.56.115')
+
 # ──────────────────────────────────────────────────────
 # Flags del CTF — 12 banderas, 3 fases
 # ──────────────────────────────────────────────────────
@@ -321,6 +325,7 @@ def inject_game_state():
         CHALLENGES  = CHALLENGES_META,
         hint_cost_min = HINT_PENALTY_S // 60,
         hint_cost_pts = HINT_PENALTY_P,
+        lab_ip        = LAB_TARGET_IP,
     )
 
 # ──────────────────────────────────────────────────────

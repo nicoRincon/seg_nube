@@ -1,0 +1,22 @@
+# ── Python ──────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+
+# ── Flask / proyecto ────────────────────────────────
+instance/
+*.log
+
+# ── Contenido subido en tiempo de ejecución (reto 9: webshell/RCE) ──
+# Nunca debe quedar commiteado lo que alguien suba al jugar.
+uploads/*
+!uploads/.gitkeep
+
+# ── Editor / SO ─────────────────────────────────────
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

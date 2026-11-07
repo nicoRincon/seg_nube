@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}Goldilocks CTF{% endblock %}</title>
+  <title>{% block title %}RicitosFlow · El Bosque de Goldilocks{% endblock %}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
@@ -14,9 +14,9 @@
 {# HUD ilustrado: madera + pergamino. #timer y #score los usa el script del final. #}
 <div class="gl-topbar">
 <header class="gl-hud">
-  <a href="{{ url_for('dashboard') }}" class="gl-brand" aria-label="Goldilocks CTF: volver al mapa">
-    <span class="gl-brand-name">Goldilocks</span>
-    <span class="gl-brand-sub">CTF <img src="{{ url_for('static', filename='img/icons/paw.svg') }}" alt="" width="18" height="18"></span>
+  <a href="{{ url_for('dashboard') }}" class="gl-brand" aria-label="RicitosFlow: volver al mapa">
+    <img class="gl-brand-logo" src="{{ url_for('static', filename='img/ricitosflow_logo.webp') }}"
+         alt="RicitosFlow" width="986" height="399" decoding="async">
   </a>
 
   <div class="gl-scroll">
@@ -34,7 +34,7 @@
     </div>
     <div class="gl-stat">
       <img class="gl-ico" src="{{ url_for('static', filename='img/icons/flag.svg') }}" alt="" width="34" height="34">
-      <span class="gl-cell-txt"><small>Banderas</small><b>{{ g_solved_n }} / {{ g_total_ch }}</b></span>
+      <span class="gl-cell-txt"><small>Huellas</small><b>{{ g_solved_n }} / {{ g_total_ch }}</b></span>
     </div>
     <div class="gl-stat">
       <img class="gl-ico" src="{{ url_for('static', filename='img/icons/level.svg') }}" alt="" width="34" height="34">
@@ -51,7 +51,7 @@
     <details class="gl-menu">
       <summary class="gl-act"><img src="{{ url_for('static', filename='img/icons/backpack.svg') }}" alt="" width="30" height="30"><span>Inventario</span></summary>
       <div class="gl-panel" role="group" aria-label="Inventario">
-        <div class="gl-panel-title">🎒 Banderas capturadas · {{ g_solved_n }}/{{ g_total_ch }}</div>
+        <div class="gl-panel-title">🎒 Huellas encontradas · {{ g_solved_n }}/{{ g_total_ch }}</div>
         {% set bag = CHALLENGES|selectattr('id', 'in', g_solved)|list %}
         {% if bag %}
           <ul class="gl-bag">
@@ -60,7 +60,7 @@
             {% endfor %}
           </ul>
         {% else %}
-          <p class="gl-panel-empty">Tu mochila está vacía. Captura tu primera bandera en el bosque.</p>
+          <p class="gl-panel-empty">Tu mochila está vacía. Encuentra tu primera huella en el bosque.</p>
         {% endif %}
       </div>
     </details>
@@ -113,8 +113,12 @@
 {% block content %}{% endblock %}
 
 <footer>
-  Goldilocks CTF &nbsp;·&nbsp; Universidad de Cundinamarca &nbsp;·&nbsp;
+  RicitosFlow · El Bosque de Goldilocks &nbsp;·&nbsp; Universidad de Cundinamarca &nbsp;·&nbsp;
   <b>⚠ Solo para uso educativo en entornos controlados</b>
+  <p class="footer-credits">
+    <span class="footer-credits-label">Desarrollado por:</span>
+    Angelica Olier &nbsp;·&nbsp; Johan Martínez &nbsp;·&nbsp; Nicolas Rincón
+  </p>
 </footer>
 
 {% if g_started %}

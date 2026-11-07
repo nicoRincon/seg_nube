@@ -1,17 +1,13 @@
 {% extends 'base.html' %}
-{% from '_macros.html' import challenge_header, briefing, hints, flag_form, detect_bar, nav_buttons %}
-{% block title %}La Cama de Osito — Goldilocks CTF{% endblock %}
+{% from '_storybook.html' import storybook with context %}
+{% block title %}{{ ch.name }} — RicitosFlow{% endblock %}
 
 {% block content %}
-<div class="wrap narrow">
-  {{ challenge_header(ch) }}
-  <p class="lead">"La cama de Osito era la más cómoda… pero la cerradura de su cuarto no comprueba nada."</p>
-
-  {{ detect_bar(g_detection) }}
-  {{ briefing(ch) }}
-
-  <div class="card glow-gold" style="border-color:var(--yellow);box-shadow:0 0 20px rgba(253,224,71,0.25);">
-    <div class="card-title">🔐 Acceso al cuarto de Osito</div>
+{% call storybook(ch, art='img/reto_1_1_tazon_caliente.png',
+                  art_alt='Tazón de sopa humeante sobre la mesa de la casa de los osos',
+                  tale='El tazón de Papá Oso humeaba demasiado para cualquier cuchara… pero quien sabe soplar justo en el borde lo prueba sin quemarse.') %}
+  <div class="card storybook-console">
+    <div class="card-title"><img class="sbn-console-ico" src="{{ url_for('static', filename='img/storybook/console-rune.svg') }}" alt="" width="22" height="22"> Probar el tazón caliente</div>
     <form method="POST" action="{{ url_for('challenge_sqli_login') }}">
       <div class="field">
         <label>Usuario</label>
@@ -41,10 +37,5 @@
       {% endif %}
     {% endif %}
   </div>
-
-  {{ hints(ch, hint_cost_min, hint_cost_pts) }}
-  {{ flag_form(ch, g_solved) }}
-
-  {{ nav_buttons(ch) }}
-</div>
+{% endcall %}
 {% endblock %}

@@ -1,17 +1,13 @@
 {% extends 'base.html' %}
-{% from '_macros.html' import challenge_header, briefing, hints, flag_form, detect_bar, nav_buttons %}
-{% block title %}¡Ricitos de Oro Escapa! — Goldilocks CTF{% endblock %}
+{% from '_storybook.html' import storybook with context %}
+{% block title %}{{ ch.name }} — RicitosFlow{% endblock %}
 
 {% block content %}
-<div class="wrap narrow">
-  {{ challenge_header(ch) }}
-  <p class="lead">"Los tres osos están despiertos. Ricitos mira el cuadro del pasillo una última vez y salta por la ventana."</p>
-
-  {{ detect_bar(g_detection) }}
-  {{ briefing(ch) }}
-
-  <div class="card glow-red">
-    <div class="card-title">🖼️ El cuadro del pasillo</div>
+{% call storybook(ch, art='img/reto_3_2_secreto_lienzo.png',
+                  art_alt='Lienzo colgado en el pasillo de la casa de los osos',
+                  tale='El cuadro del pasillo parece solo un paisaje del bosque… pero bajo cada capa de pintura el lienzo guarda un mensaje que solo ve quien conoce la palabra justa.') %}
+  <div class="card storybook-console">
+    <div class="card-title"><img class="sbn-console-ico" src="{{ url_for('static', filename='img/storybook/console-rune.svg') }}" alt="" width="22" height="22"> El cuadro del pasillo</div>
     <div style="display:flex;gap:1.4rem;flex-wrap:wrap;align-items:center;">
       <img src="{{ url_for('static', filename='img/cuadro_del_pasillo.png') }}"
            alt="Cuadro del pasillo"
@@ -26,17 +22,12 @@
         </a>
       </div>
     </div>
-    <div class="code-block" style="margin-top:1rem;">$ steghide extract -sf cuadro_del_pasillo.jpg
+    <pre class="code-block storybook-console-output" style="margin-top:1rem;">$ steghide extract -sf cuadro_del_pasillo.jpg
 Enter passphrase: ricitos
 wrote extracted data to "mensaje_oculto.txt".
 
 # sin steghide:
-$ strings cuadro_del_pasillo.png | grep CTF</div>
+$ strings cuadro_del_pasillo.png | grep CTF</pre>
   </div>
-
-  {{ hints(ch, hint_cost_min, hint_cost_pts) }}
-  {{ flag_form(ch, g_solved) }}
-
-  {{ nav_buttons(ch) }}
-</div>
+{% endcall %}
 {% endblock %}

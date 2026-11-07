@@ -14,7 +14,7 @@
     <p>{{ ch.brief | safe }}</p>
     <hr>
     <p style="font-size:0.85rem;color:var(--text-faint);">
-      Formato de bandera: <code>CTF{...}</code> &nbsp;·&nbsp; Vale {{ ch.pts }} PTS
+      Formato de huella: <code>CTF{...}</code> &nbsp;·&nbsp; Vale {{ ch.pts }} PTS
     </p>
   </div>
 {% endmacro %}
@@ -60,9 +60,9 @@
 {% macro flag_form(ch, solved) %}
   {% set prev_ch, next_ch = challenge_nav(ch.id) %}
   <div class="card glow-green">
-    <div class="card-title">🚩 Enviar bandera</div>
+    <div class="card-title">🐾 Registrar huella</div>
     {% if ch.id in solved %}
-      <div class="alert alert-success">✓ Bandera capturada. ¡Bien hecho!</div>
+      <div class="alert alert-success">✓ Huella registrada en tu álbum. ¡Bien hecho!</div>
       {% if next_ch %}
         <a class="btn btn-green" href="{{ url_for(next_ch.endpoint) }}">
           Siguiente: {{ next_ch.name }} →
@@ -74,10 +74,10 @@
       <form method="POST" action="{{ url_for('submit_flag') }}">
         <input type="hidden" name="challenge" value="{{ ch.id }}">
         <div class="field">
-          <label>Bandera encontrada</label>
+          <label>Huella encontrada</label>
           <input type="text" name="flag" placeholder="CTF{...}" autocomplete="off">
         </div>
-        <button class="btn btn-green" type="submit">Enviar bandera</button>
+        <button class="btn btn-green" type="submit">Registrar huella</button>
       </form>
     {% endif %}
   </div>
@@ -93,7 +93,7 @@
       <a class="btn btn-ghost" href="{{ url_for('dashboard') }}">← Panel</a>
     {% endif %}
 
-    <a class="btn btn-ghost" href="{{ url_for('dashboard') }}">Todas las banderas</a>
+    <a class="btn btn-ghost" href="{{ url_for('dashboard') }}">Álbum de huellas</a>
 
     {% if next_ch %}
       <a class="btn btn-outline" href="{{ url_for(next_ch.endpoint) }}">{{ next_ch.name }} →</a>

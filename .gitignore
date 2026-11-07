@@ -20,3 +20,10 @@ uploads/*
 .idea/
 .DS_Store
 Thumbs.db
+
+# ── Bases locales del acceso y del prólogo del Guardián ──
+# participants.db guarda hashes de contraseñas: nunca debe versionarse.
+participants.db
+participants.db-journal
+cernicalo.db
+cernicalo.db-journal

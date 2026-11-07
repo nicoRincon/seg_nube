@@ -1,0 +1,84 @@
+{#
+  ─────────────── Libro ilustrado común de los retos ───────────────
+  Escenario: static/img/libro.png (1536×1024, 3:2) como contenedor principal.
+  Los componentes se colocan encima en % de la imagen (sección STORYBOOK de
+  style.css). En móvil, el libro queda como cabecera y las zonas se apilan.
+
+  Uso (importar con contexto: usa g_detection, g_solved y los costes de pistas):
+
+    {% from '_storybook.html' import storybook with context %}
+    {% call storybook(ch, art='img/reto_1_2_cuchara_coincidencia.png',
+                      art_alt='…', tale='…') %}
+      … contenido interactivo propio del reto (página derecha) …
+    {% endcall %}
+
+  - art: ruta dentro de static/. Sin art, el marco de la página izquierda
+    queda vacío (no se inventan ni reutilizan ilustraciones).
+  - Debajo del contenido propio, el libro añade siempre recompensa, registro de
+    huella y pistas (los macros de _macros.html, sin cambios).
+#}
+{% from '_macros.html' import briefing, hints, flag_form, detect_bar, nav_buttons %}
+
+{% macro storybook(ch, art=None, art_alt='', tale='') %}
+<article class="storybook storybook--{{ ch.id }}" aria-labelledby="sbn-title">
+  <div class="sbn-stage">
+    <div class="sbn-scene">
+      <img class="sbn-bg" src="{{ url_for('static', filename='img/libro.png') }}" alt="" width="1536" height="1024">
+
+      {# Placa de madera superior izquierda: nombre narrativo del reto #}
+      <h1 class="sbn-plaque" id="sbn-title">{{ ch.name }}</h1>
+      <p class="sbn-meta">
+        Fase {{ ch.phase }}{% for p in PHASES if p.id == ch.phase %} · {{ p.name }}{% endfor %} — {{ ch.category }}
+      </p>
+
+      {# Marco rasgado de la página izquierda: ilustración propia del reto o vacío #}
+      {% if art %}
+      <figure class="sbn-art">
+        <img src="{{ url_for('static', filename=art) }}" alt="{{ art_alt }}" width="1536" height="1024">
+      </figure>
+      {% else %}
+      <figure class="sbn-art sbn-art--empty" aria-hidden="true"></figure>
+      {% endif %}
+    </div>
+
+    {# En móvil la placa es pequeña: la fase y la categoría se muestran aquí #}
+    <p class="sbn-meta-mobile">
+      Fase {{ ch.phase }}{% for p in PHASES if p.id == ch.phase %} · {{ p.name }}{% endfor %} — {{ ch.category }}
+    </p>
+
+    <div class="sbn-zone sbn-zone--detect">{{ detect_bar(g_detection) }}</div>
+
+    {# Página izquierda, bajo el marco: narración y misión #}
+    <section class="sbn-zone sbn-zone--story" aria-label="Narración y misión">
+      {% if tale %}<p class="sbn-tale">{{ tale }}</p>{% endif %}
+      {{ briefing(ch) }}
+    </section>
+
+    {# Página derecha: interacción del desafío #}
+    <section class="sbn-zone sbn-zone--right" aria-label="Desafío" tabindex="0">
+      {{ caller() }}
+
+      {# Recompensa y coste de pistas: mismos valores que usan la misión y el sistema de pistas #}
+      <dl class="sbn-reward">
+        <div class="sbn-reward-item">
+          <img src="{{ url_for('static', filename='img/icons/star.svg') }}" alt="" width="24" height="24">
+          <dt>Recompensa</dt>
+          <dd>{{ ch.pts }} PTS</dd>
+        </div>
+        <div class="sbn-reward-item sbn-reward-item--cost">
+          <img src="{{ url_for('static', filename='img/icons/bulb.svg') }}" alt="" width="24" height="24">
+          <dt>Cada pista</dt>
+          <dd>−{{ hint_cost_min }} min · −{{ hint_cost_pts }} pts</dd>
+        </div>
+      </dl>
+
+      {{ flag_form(ch, g_solved) }}
+
+      <div class="sbn-divider" aria-hidden="true"></div>
+      {{ hints(ch, hint_cost_min, hint_cost_pts) }}
+    </section>
+
+    <div class="sbn-zone sbn-zone--nav">{{ nav_buttons(ch) }}</div>
+  </div>
+</article>
+{% endmacro %}

@@ -1,5 +1,5 @@
 """
-Goldilocks CTF — Script de configuración inicial
+RicitosFlow CTF — Script de configuración inicial
 Ejecutar una sola vez: python setup_db.py
 
 Crea: base de datos (usuarios + recetas + puntajes), archivos de flags,
@@ -93,6 +93,17 @@ CREATE TABLE scores (
     challenge TEXT,
     pts       INTEGER,
     UNIQUE(username, challenge)
+)
+""")
+
+# Pistas abiertas por participante (descuento persistente; app.py también la crea si falta)
+db.execute("""
+CREATE TABLE IF NOT EXISTS hint_unlocks (
+    id        INTEGER PRIMARY KEY AUTOINCREMENT,
+    username  TEXT    NOT NULL,
+    hint_key  TEXT    NOT NULL,
+    pts       INTEGER NOT NULL,
+    UNIQUE(username, hint_key)
 )
 """)
 db.commit()
@@ -199,7 +210,7 @@ else:
     print("    Alternativa: strings cuadro_del_pasillo.png | grep CTF")
 
 print("\n" + "=" * 52)
-print("  Goldilocks CTF - Setup completado")
+print("  RicitosFlow CTF - Setup completado")
 print("=" * 52)
 print("  Ejecutar: python app.py  ->  http://localhost:5000\n")
 print("  Credenciales de prueba:")

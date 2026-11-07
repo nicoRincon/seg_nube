@@ -1,23 +1,19 @@
 {% extends 'base.html' %}
-{% from '_macros.html' import challenge_header, briefing, hints, flag_form, detect_bar, nav_buttons %}
-{% block title %}El Camino al Bosque — Goldilocks CTF{% endblock %}
+{% from '_storybook.html' import storybook with context %}
+{% block title %}{{ ch.name }} — RicitosFlow{% endblock %}
 
 {% block content %}
-<div class="wrap narrow">
-  {{ challenge_header(ch) }}
-  <p class="lead">"En el camino al bosque, Ricitos susurró su contraseña… y alguien estaba escuchando."</p>
-
-  {{ detect_bar(g_detection) }}
-  {{ briefing(ch) }}
-
-  <div class="card glow-green">
-    <div class="card-title">🛰️ Laboratorio real</div>
-    <p style="font-size:0.9rem;color:var(--text-dim);">
+{% call storybook(ch, art='img/reto_3_1_ojos_vigilan.png',
+                  art_alt='Unos ojos brillantes espían desde detrás de un cuadro, junto a un aparato con cables y luces',
+                  tale='Detrás del cuadro, unos ojos no pierden detalle: cada palabra que cruza la casa en voz alta queda escuchada… y anotada.') %}
+  <div class="card storybook-console">
+    <div class="card-title"><img class="sbn-console-ico" src="{{ url_for('static', filename='img/storybook/console-rune.svg') }}" alt="" width="22" height="22"> Laboratorio real</div>
+    <p class="storybook-console-intro">
       Si tienes el laboratorio montado, Metasploitable2 ({{ lab_ip }}) envía un
       "check-in" HTTP con credenciales en texto claro cada 30 segundos hacia tu
       Kali. Captúralo con Wireshark:
     </p>
-    <div class="code-block">
+    <pre class="code-block storybook-console-output">
 # 1) En Kali, deja algo escuchando para recibir el check-in:
 $ while true; do nc -l -p 8080 -q 1 2>/dev/null; done
 
@@ -26,12 +22,12 @@ $ while true; do nc -l -p 8080 -q 1 2>/dev/null; done
 
 # 3) Follow → HTTP Stream, copia el valor de "Authorization: Basic ..."
 #    y decodifícalo:
-$ echo '&lt;valor_base64&gt;' | base64 -d</div>
+$ echo '&lt;valor_base64&gt;' | base64 -d</pre>
   </div>
 
-  <div class="card glow-green">
-    <div class="card-title">🛰️ Captura de red (simulada)</div>
-    <p style="font-size:0.9rem;color:var(--text-dim);">
+  <div class="card storybook-console">
+    <div class="card-title"><img class="sbn-console-ico" src="{{ url_for('static', filename='img/storybook/console-rune.svg') }}" alt="" width="22" height="22"> Captura de red (simulada)</div>
+    <p class="storybook-console-intro">
       ¿Sin laboratorio a mano? Descarga esta captura de ejemplo y ábrela en
       Wireshark (o léela como texto). Busca la petición HTTP con credenciales
       en texto claro.
@@ -39,13 +35,8 @@ $ echo '&lt;valor_base64&gt;' | base64 -d</div>
     <a href="{{ url_for('wireshark_capture') }}" class="btn btn-outline">
       ⬇ Descargar captura_bosque.pcap
     </a>
-    <div class="code-block" style="margin-top:1rem;">$ grep -i "Authorization: Basic" captura_bosque.pcap
-$ echo 'cmljaXRvczou...' | base64 -d</div>
+    <pre class="code-block storybook-console-output" style="margin-top:1rem;">$ grep -i "Authorization: Basic" captura_bosque.pcap
+$ echo 'cmljaXRvczou...' | base64 -d</pre>
   </div>
-
-  {{ hints(ch, hint_cost_min, hint_cost_pts) }}
-  {{ flag_form(ch, g_solved) }}
-
-  {{ nav_buttons(ch) }}
-</div>
+{% endcall %}
 {% endblock %}

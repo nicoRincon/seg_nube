@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+{% block title %}El Guardián del Cernícalo — RicitosFlow{% endblock %}
+
+{% block content %}
+{#
+  Prólogo obligatorio antes del mapa (sin puntos). La consulta vulnerable se
+  ejecuta solo contra cernicalo.db, en modo lectura (ver cernicalo_lab.py).
+
+  Composición sobre static/img/puerta_cernicalo.png (1672×941), fija y anclada
+  arriba: el cernícalo está en la franja superior central y la puerta ocupa
+  el centro (≈35–66 % del ancho). Las columnas van sobre los troncos de los
+  lados y el centro queda libre (ver la sección PRÓLOGO de style.css).
+#}
+<div class="gd-scene">
+  <div class="gd-fireflies" aria-hidden="true"></div>
+
+  <header class="gd-head">
+    <p class="gd-eyebrow">Fase 0 · La Entrada · Reto 0.2</p>
+    <h1 class="gd-title">El Guardián del Cernícalo</h1>
+    <p class="gd-intro">Antes de llegar a la casa de los tres osos, Ricitos se topó con una puerta de madera.
+      Sobre ella, un cernícalo de ojos dorados vigilaba con un libro abierto entre las garras.</p>
+    <p class="gd-who">Explorador: <b>{{ participant.username }}</b>
+      <span aria-hidden="true">·</span> <a href="{{ url_for('logout') }}">Salir</a></p>
+  </header>
+
+  <div class="gd-grid">
+    {# ── Columna izquierda: narrativa, instrucciones y pistas ── #}
+    <section class="gd-col gd-col-left" aria-label="La prueba del Guardián">
+      <article class="gd-panel">
+        <h2 class="gd-plaque">La prueba</h2>
+        <p>El cernícalo solo deja pasar a los <b>vigías del bosque</b>. Cada vigía debe decir su nombre
+          y su <b>santo y seña</b>, y el Guardián los busca en su libro. Esta mañana cambiaron todos
+          los santos y señas y nadie se los sabe.</p>
+        <p>El libro del Guardián es una base de datos y la búsqueda es una consulta SQL que pega tus
+          palabras tal como las escribes.</p>
+        <p class="gd-goal"><b>Tu objetivo:</b> cruzar la puerta sin conocer ningún santo y seña.</p>
+        <p class="gd-note">Prólogo obligatorio y sin puntos. Cuando lo superes no tendrás que repetirlo.</p>
+      </article>
+
+      {% if not cleared %}
+      <details class="gd-panel gd-hints">
+        <summary>
+          <span class="gd-plaque">Pistas del prólogo (gratis)</span>
+          <span class="gd-hints-cap">Ábrelas solo si te atascas. No restan tiempo ni puntos.</span>
+        </summary>
+        <ol>
+          <li>Fíjate dónde terminan las comillas simples de la consulta cuando escribes una
+            <code>'</code> en el nombre.</li>
+          <li>En SQLite, <code>--</code> convierte en comentario el resto de la línea. Y una condición
+            con <code>OR</code> verdadera hace que el <code>WHERE</code> se cumpla siempre.</li>
+        </ol>
+      </details>
+      {% endif %}
+    </section>
+
+    {# ── Columna derecha: formulario y visor de la consulta ── #}
+    <section class="gd-col gd-col-right" aria-label="Habla con el Guardián">
+      {% if not cleared %}
+      <div class="gd-panel">
+        <h2 class="gd-plaque">Habla con el Guardián</h2>
+        <form class="gd-form" method="POST" action="{{ url_for('guardian') }}">
+          <label for="vigia">Nombre del vigía</label>
+          <input type="text" id="vigia" name="vigia" maxlength="{{ max_input }}" autocomplete="off"
+                 spellcheck="false" placeholder="ej.: cernicalo"
+                 value="{{ request.form.get('vigia', '') if attempt else '' }}">
+          <label for="santo">Santo y seña</label>
+          <input type="text" id="santo" name="santo" maxlength="{{ max_input }}" autocomplete="off"
+                 spellcheck="false" placeholder="…"
+                 value="{{ request.form.get('santo', '') if attempt else '' }}">
+          <button class="login-start gd-submit" type="submit">
+            <span>Decir el santo y seña</span><span aria-hidden="true">➜</span>
+          </button>
+        </form>
+      </div>
+      {% endif %}
+
+      {# Visor: plantilla siempre visible; consulta real y filas tras cada intento #}
+      <div class="gd-panel gd-viewer">
+        <h2 class="gd-plaque">Consulta del Guardián</h2>
+        {% if attempt and attempt.query %}
+          <p class="gd-label">Consulta ejecutada:</p>
+          <pre class="gd-sql">{{ attempt.query }}</pre>
+        {% else %}
+          <p class="gd-label">Así busca el Guardián en su libro:</p>
+          <pre class="gd-sql">{{ query_template }}</pre>
+        {% endif %}
+
+        {% if attempt and attempt.passed %}
+          <p class="gd-label">Filas que devolvió el libro:</p>
+          <div class="gd-rows-wrap">
+            <table class="gd-rows">
+              <thead><tr>{% for c in attempt.columns %}<th scope="col">{{ c }}</th>{% endfor %}</tr></thead>
+              <tbody>
+                {% for r in attempt.rows %}
+                  <tr>{% for v in r %}<td>{{ v }}</td>{% endfor %}</tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% endif %}
+      </div>
+    </section>
+
+    {# ── Parte inferior, sobre el sendero: validación y entrada al bosque ── #}
+    {% if attempt or cleared %}
+    <section class="gd-bottom" id="gd-resultado" aria-live="polite" {{ 'data-scroll' if attempt }}>
+      {% if attempt and attempt.error %}
+        <div class="gd-msg gd-msg-danger" role="alert">{{ attempt.error }}</div>
+      {% elif attempt and not attempt.passed %}
+        <div class="gd-msg gd-msg-warning">El Guardián niega con la cabeza: ningún vigía coincide con ese
+          nombre y santo y seña.</div>
+      {% endif %}
+
+      {% if cleared %}
+      <div class="gd-panel gd-open">
+        <h2 class="gd-plaque">La puerta se abre</h2>
+        <div class="gd-msg gd-msg-success">
+          {% if attempt and attempt.passed %}
+            El cernícalo encontró una coincidencia en su libro y te deja pasar sin saber ningún santo y seña.
+          {% else %}
+            El Guardián te reconoce: ya cruzaste esta puerta.
+          {% endif %}
+          Tu paso quedó registrado.
+        </div>
+        <div class="gd-seal">
+          <img src="{{ url_for('static', filename='img/storybook/wax-seal-gold.svg') }}" alt="" width="46" height="52">
+          <div>
+            <p class="gd-label">Sello del Guardián</p>
+            <code class="gd-flag">{{ guardian_flag }}</code>
+          </div>
+        </div>
+        <p class="gd-note">Este sello confirma el prólogo y no suma puntos.</p>
+        <form method="POST" action="{{ url_for('start') }}">
+          <button class="login-start gd-enter" type="submit">
+            <span>Entrar al bosque y abrir el mapa</span><span aria-hidden="true">➜</span>
+          </button>
+        </form>
+      </div>
+      {% endif %}
+    </section>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+(function () {
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Tras un intento, llevar la vista al resultado (mensajes y botón de entrada)
+  var result = document.querySelector('.gd-bottom[data-scroll]');
+  if (result && result.scrollIntoView) {
+    result.scrollIntoView({ block: 'center' });   // instantáneo: la página ya carga en el resultado
+  }
+
+  // Luciérnagas: pocas partículas con transform/opacity; sin eventos de puntero
+  var box = document.querySelector('.gd-fireflies');
+  if (!box || reduce) return;
+  var n = window.innerWidth < 700 ? 12 : 22;
+  function rnd(a, b) { return a + Math.random() * (b - a); }
+  for (var i = 0; i < n; i++) {
+    var f = document.createElement('span');
+    f.className = 'gd-firefly';
+    f.style.cssText =
+      '--x:' + rnd(2, 98).toFixed(1) + '%;' +
+      '--y:' + rnd(18, 96).toFixed(1) + '%;' +
+      '--s:' + rnd(2, 5.5).toFixed(1) + 'px;' +
+      '--dx:' + rnd(-70, 70).toFixed(0) + 'px;' +
+      '--dy:' + rnd(-90, 30).toFixed(0) + 'px;' +
+      '--t:' + rnd(9, 20).toFixed(1) + 's;' +
+      '--g:' + rnd(1.8, 4.5).toFixed(1) + 's;' +
+      '--d:-' + rnd(0, 18).toFixed(1) + 's;' +
+      '--o:' + rnd(0.45, 0.95).toFixed(2);
+    box.appendChild(f);
+  }
+})();
+</script>
+{% endblock %}

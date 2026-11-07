@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}¡Los osos están cerca! — Goldilocks CTF{% endblock %}
+{% block title %}¡Los osos están cerca! — RicitosFlow{% endblock %}
 
 {% block content %}
 {#
@@ -31,17 +31,17 @@
       <dl class="lose-stats">
         <div><dt>Jugador</dt><dd>{{ g_username }}</dd></div>
         <div><dt>Puntos</dt><dd>{{ g_score }} / {{ g_total_pts }}</dd></div>
-        <div><dt>Banderas</dt><dd>{{ g_solved_n }} / {{ g_total_ch }}</dd></div>
+        <div><dt>Huellas</dt><dd>{{ g_solved_n }} / {{ g_total_ch }}</dd></div>
         <div><dt>Tiempo restante</dt><dd>{{ '%02d:%02d'|format(g_remaining // 60, g_remaining % 60) }}</dd></div>
         <div><dt>Detección</dt><dd>{{ g_detection }} %</dd></div>
       </dl>
     </div>
 
     {# Tabla central: cabecera de la lista #}
-    <h2 class="lose-list-head">Banderas capturadas <span>{{ g_solved_n }} / {{ g_total_ch }}</span></h2>
+    <h2 class="lose-list-head">Huellas encontradas <span>{{ g_solved_n }} / {{ g_total_ch }}</span></h2>
 
-    {# Pergamino inferior: lista dinámica de banderas capturadas #}
-    <div class="lose-list" tabindex="0" aria-label="Banderas capturadas">
+    {# Pergamino inferior: lista dinámica de huellas encontradas #}
+    <div class="lose-list" tabindex="0" aria-label="Huellas encontradas">
       {% if g_solved %}
         <ul>
           {% for ch in CHALLENGES if ch.id in g_solved %}

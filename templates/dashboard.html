@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% from '_macros.html' import detect_bar %}
-{% block title %}Mapa del Bosque — Goldilocks CTF{% endblock %}
+{% block title %}Mapa del Bosque — RicitosFlow{% endblock %}
 
 {% block content %}
 {# ── Ubicación de cada desafío sobre mapa_bosque.png (1536×1024) ──
@@ -50,7 +50,7 @@
     <ul class="map-legend" aria-label="Leyenda del mapa">
       <li><img class="map-legend-ico" src="{{ url_for('static', filename='img/icons/map-lock.svg') }}" alt="" width="16" height="16">Pendiente</li>
       <li><span class="dot dot-next"></span>Recomendado</li>
-      <li><img class="map-legend-ico" src="{{ url_for('static', filename='img/icons/map-check.svg') }}" alt="" width="16" height="16">Capturada</li>
+      <li><img class="map-legend-ico" src="{{ url_for('static', filename='img/icons/map-check.svg') }}" alt="" width="16" height="16">Huella encontrada</li>
     </ul>
   </header>
 
@@ -67,20 +67,20 @@
                 class="phase-sign {{ 'is-current' if phase.id == ns.next_phase }} {{ 'is-complete' if in_phase and done == in_phase|length }}"
                 style="--phase-accent: {{ ps.accent }}"
                 data-phase="{{ phase.id }}" aria-pressed="false"
-                aria-label="Fase {{ phase.id }}, {{ phase.name }}: {{ done }} de {{ in_phase|length }} banderas{{ ', en curso' if phase.id == ns.next_phase }}. Resaltar en el mapa">
+                aria-label="Fase {{ phase.id }}, {{ phase.name }}: {{ done }} de {{ in_phase|length }} huellas{{ ', en curso' if phase.id == ns.next_phase }}. Resaltar en el mapa">
           <span class="phase-sign-board">
             <img class="phase-sign-ico" src="{{ url_for('static', filename='img/icons/' ~ ps.icon ~ '.svg') }}" alt="" width="44" height="44">
             <span class="phase-sign-txt">
               <small>Fase {{ phase.id }}{% if phase.id == ns.next_phase %} · <em>en curso</em>{% endif %}</small>
               <strong>{{ phase.name }}</strong>
-              <span class="phase-sign-prog">{{ '✓ ' if in_phase and done == in_phase|length }}{{ done }}/{{ in_phase|length }} banderas</span>
+              <span class="phase-sign-prog">{{ '✓ ' if in_phase and done == in_phase|length }}{{ done }}/{{ in_phase|length }} huellas</span>
             </span>
           </span>
         </button>
       {% endfor %}
     </nav>
     <div class="map-viewport">
-      <main class="map-stage" aria-label="Mapa de desafíos Goldilocks CTF">
+      <main class="map-stage" aria-label="Mapa de desafíos de RicitosFlow">
         <img class="map-img"
              src="{{ url_for('static', filename='img/mapa_bosque.png') }}"
              width="1536" height="1024" decoding="async"
@@ -110,7 +110,7 @@
                  data-phase="Fase {{ ch.phase }} · {{ phase_names.get(ch.phase, '') }}"
                  data-brief="{{ ch.brief|striptags|truncate(120) }}"
                  data-state="{{ 'solved' if solved else ('next' if ch.id == ns.next_id else 'pending') }}"
-                 aria-label="{{ ch.name }}, {{ spot.place }}. {{ ch.pts }} puntos. {{ 'Capturada' if solved else 'Pendiente' }}{{ '. Recomendado' if ch.id == ns.next_id }}">
+                 aria-label="{{ ch.name }}, {{ spot.place }}. {{ ch.pts }} puntos. {{ 'Huella encontrada' if solved else 'Pendiente' }}{{ '. Recomendado' if ch.id == ns.next_id }}">
                 {# Pendiente: placa con candado, número, nombre y categoría.
                    Superado: insignia verde (el nombre aparece al pasar el ratón o con el foco). #}
                 <span class="map-spot-pin" aria-hidden="true">
@@ -152,7 +152,7 @@
           <li>
             <a href="{{ url_for(ch.endpoint) }}" class="{{ 'is-solved' if ch.id in g_solved }}">
               <span aria-hidden="true">{{ ch.icon }}</span> {{ ch.name }}
-              <small>{{ ch.category }} · {{ ch.pts }} PTS · {{ 'capturada' if ch.id in g_solved else 'pendiente' }}</small>
+              <small>{{ ch.category }} · {{ ch.pts }} PTS · {{ 'huella encontrada' if ch.id in g_solved else 'pendiente' }}</small>
             </a>
           </li>
         {% endfor %}
@@ -161,7 +161,7 @@
   {% endif %}
 
   <p class="map-story">
-    🗝️ Ricitos ya ha dejado huellas por todo el bosque. Captura las banderas, sigue las pistas y encuentra una ruta de escape antes de que los osos regresen.
+    🗝️ Ricitos ya ha dejado huellas por todo el bosque. Encuentra sus huellas, sigue las pistas y encuentra una ruta de escape antes de que los osos regresen.
     <em>«No sigas solamente el camino marcado: observa, investiga y descubre lo que otros dejaron oculto.»</em>
   </p>
 </div>
@@ -174,7 +174,7 @@
 
   var spots = frame.querySelectorAll('.map-spot');
   var stateText = {
-    solved: '✓ Bandera capturada',
+    solved: '✓ Huella encontrada',
     next: '✧ Recomendado: tu siguiente parada',
     pending: '○ Por descubrir'
   };

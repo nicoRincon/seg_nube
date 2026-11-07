@@ -12,6 +12,7 @@
 >
 > **Fecha de elaboración:** 25-10-2026. **Base:** rama `angelica` con cambios locales sin commit (ver B.6).
 > **Actualizaciones (25-10-2026):** se añade la sección K, sobre la arquitectura de despliegue, y se actualiza con la infraestructura real confirmada (VirtualBox con una única VM de Kali).
+> **Actualización (06-11-2026):** se añade la sección L, con la propuesta de acceso con cuentas, tres bases SQLite y el prólogo «El Guardián del Cernícalo», y se registran sus decisiones en la sección I.
 
 ---
 
@@ -28,6 +29,7 @@
 - I. Registro de decisiones y pendientes
 - J. Criterios de aceptación
 - K. Arquitectura de despliegue
+- L. Acceso con cuentas y prólogo «El Guardián del Cernícalo» (propuesta)
 
 ---
 
@@ -346,6 +348,11 @@ No hay fechas ni asignaciones personales; ver la sección I.
 | Ilustración de cada capítulo (la primera: `static/img/capitulos/sopa_osito.png`, todavía no está) | Pendiente | Medio | Interfaz |
 | Adaptar el mapa a 4 fases (coordenadas, letreros, etiquetas) | Pendiente (depende de la matriz) | Medio | Interfaz |
 | Sustituir los emojis de los macros por iconos | Pendiente (fase de integración) | Bajo | Interfaz + responsable de los macros |
+| Acceso con cuentas, tres bases SQLite y prólogo obligatorio del Guardián del Cernícalo, sin puntos (L.1) | Confirmada | Alto: sesión, rutas, portada, Docker | Equipo |
+| Relación entre el prólogo del Guardián y la «Fase 0 de 3 retos» | **Pendiente** | Medio: portada, totales, narrativa | Equipo |
+| Aislar `participants.db` y `cernicalo.db` de la ejecución de comandos de `webshell` (L.10) | **Pendiente** | Crítico | Equipo + docente responsable |
+| Excluir las bases de Git y sacar `goldilocks.db` del índice (L.10) | **Pendiente** | Medio: Docker, instalación | Equipo |
+| Muro de `xss_stored` y carpeta `uploads/` separados por participante (L.10) | **Pendiente** | Alto | Backend |
 
 ---
 
@@ -543,3 +550,174 @@ Todas las pruebas se hacen **dentro del entorno autorizado**, **nunca en el equi
 | Adaptar las IP fijas de textos y pistas a la topología definitiva | **Pendiente** | Depende del paso 5 de K.8 |
 | Quién crea y mantiene la VM objetivo y la VM Metasploitable 2 | **Pendiente** | Asignación del equipo |
 | Instalación, conectividad y funcionamiento de los retos en el laboratorio | **No probado** | Criterios de K.9 |
+
+---
+
+## L. Acceso con cuentas y prólogo «El Guardián del Cernícalo» (propuesta)
+
+> **Estado:** propuesta de arquitectura. **No implementada.** No se ha cambiado código, plantillas, bases de datos ni configuración.
+>
+> **Fecha:** 06-11-2026. **Base:** rama `angelica` con cambios locales sin commit.
+>
+> Esta sección no contiene contraseñas, claves ni banderas. Los nombres de rutas, tablas y módulos son **provisionales**.
+
+### L.1 Decisiones aprobadas (confirmado)
+
+| Decisión | Detalle |
+|---|---|
+| Tres bases SQLite independientes | `goldilocks.db` conserva las tablas y los datos actuales de los retos y las puntuaciones. `participants.db` guarda participantes, hashes de contraseñas y sesiones. `cernicalo.db` guarda solo los datos ficticios del laboratorio de inyección SQL. |
+| Flujo obligatorio | Registro o inicio de sesión seguro → puerta del Guardián → inyección SQL superada → progreso registrado → mapa. |
+| Prólogo sin puntos | El Guardián es obligatorio y no otorga puntos. Se mantienen los 12 retos y los 900 puntos. |
+| Sin acceso como invitado | Se elimina la entrada directa por nombre. |
+| Identidad en el servidor | La identidad del participante se valida en el servidor en cada petición. |
+| Progreso al servidor | El progreso se migra de la cookie al servidor de forma progresiva. |
+| Vulnerabilidades conservadas | Los retos actuales mantienen sus vulnerabilidades. Ninguno debe dar acceso a `participants.db` ni a `cernicalo.db`. |
+| Escalada de privilegios | El reto `privesc` sigue funcionando, pero sin permitir suplantar a otro participante. |
+
+### L.2 Estado actual relevante (verificado)
+
+- La portada envía un nombre libre a `/start`, que crea una partida de invitado. No hay autenticación.
+- Todo el estado de la partida vive en la cookie de sesión de Flask: nombre, rol, inicio del cronómetro, penalizaciones, detección, banderas y pistas. La cookie está firmada, pero no cifrada.
+- La clave de firma es débil a propósito y `/admin/config` la publica para el reto `privesc`. Con ella, cualquiera puede fabricar una cookie con cualquier contenido.
+- Al capturar una bandera, se inserta una fila en la tabla `scores` de `goldilocks.db` con el nombre tomado de la cookie. El marcador suma esa tabla y no descuenta las penalizaciones por pistas, a diferencia del HUD.
+- `setup_db.py` **borra y recrea** `goldilocks.db` cada vez que se ejecuta, lo que borra también las puntuaciones. Además, siempre escribe en la carpeta del proyecto y no respeta `GOLDILOCKS_DB_PATH`.
+- El repositorio ya incluye `Dockerfile`, `compose.yaml` y `docker-entrypoint.sh`. La imagen no declara un usuario sin privilegios, así que el proceso corre como `root`. El arranque copia `goldilocks.db` de la imagen al volumen `/data` solo si todavía no existe.
+- `goldilocks.db` está versionada en Git.
+- `xss_stored` comparte entre todos los jugadores una lista de comentarios en memoria. `uploads/` también es una carpeta común.
+- `/reset`, `/logout` y `/set_level/<nivel>` funcionan con enlaces GET.
+
+### L.3 Inicialización y actualización de las tres bases (propuesto)
+
+Un único módulo de inicialización, idempotente, se ejecuta al arrancar la aplicación y desde `setup_db.py`. Cada base lleva su número de versión de esquema en `PRAGMA user_version`.
+
+| Base | Ruta configurable | Creación | Actualización | ¿Se puede borrar? |
+|---|---|---|---|---|
+| `goldilocks.db` | `GOLDILOCKS_DB_PATH` (ya existe) | `setup_db.py`, solo si no existe | Sin cambios de esquema | **No.** Contiene las puntuaciones históricas. Recrearla exigirá una opción explícita de `setup_db.py` |
+| `participants.db` | Nueva variable, por ejemplo `PARTICIPANTS_DB_PATH` | Al arrancar, si no existe | Migraciones solo aditivas, según `user_version` | **Nunca** de forma automática. Copia de seguridad antes de cada migración |
+| `cernicalo.db` | Nueva variable, por ejemplo `CERNICALO_DB_PATH` | Al arrancar, si no existe | Se regenera completa si cambia su versión | Sí. Es desechable: la superación del prólogo se guarda en `participants.db` |
+
+**Esquema propuesto de `participants.db`**, todo con consultas parametrizadas:
+
+| Tabla | Contenido | Etapa |
+|---|---|---|
+| `participants` | id, nombre único sin distinguir mayúsculas, hash scrypt con sal (Werkzeug, ya incluido en Flask), fecha de alta | 1 |
+| `auth_sessions` | Hash del token de sesión, participante, creación, último uso, caducidad | 1 |
+| `prologue` | Participante, fecha de superación del Guardián, número de intentos | 1 |
+| `games` | Partida activa por participante: inicio del cronómetro, penalizaciones, detección, fin | 2 |
+| `game_hints` | Pistas abiertas en cada partida | 2 |
+| `game_flags` | Banderas resueltas en cada partida | 3 |
+
+**Contenido de `cernicalo.db`:** una tabla de guardianes con datos ficticios y una clave aleatoria generada en cada instalación, que no está en el repositorio. Puede tener tablas señuelo para practicar la exploración con `UNION`. No contiene datos de participantes.
+
+**Configuración de SQLite:** modo WAL y tiempo de espera ante bloqueos en `participants.db`, que recibe escrituras concurrentes.
+
+### L.4 Instalación nueva y Docker (propuesto)
+
+**Instalación local nueva**
+1. `pip install -r requirements.txt`.
+2. `python setup_db.py`: crea `goldilocks.db` solo si no existe, genera los archivos de los retos y llama a la inicialización de las otras dos bases.
+3. `python app.py`: repite la inicialización, que es idempotente.
+4. Al abrir la portada aparecen las pestañas «Iniciar sesión» y «Registrarse». No existe ninguna cuenta precreada.
+
+**Docker**
+- El `Dockerfile` declara las tres rutas dentro de `/data`, que es el volumen persistente ya existente.
+- El arranque mantiene la copia de `goldilocks.db` si falta. La aplicación crea `participants.db` y `cernicalo.db` al iniciar.
+- **Volumen existente:** `goldilocks.db` y sus puntuaciones no se tocan. Las otras dos bases se crean en el primer arranque de la nueva versión.
+- **Reconstrucción de la imagen:** no afecta a `/data`.
+- **Pendiente:** si `goldilocks.db` sale de Git, el arranque debe generarla con `setup_db.py` en vez de copiarla de la imagen.
+- **Pendiente:** ejecutar el proceso con un usuario sin privilegios, como pide K.5.
+
+### L.5 Conservación de las puntuaciones (propuesto)
+
+- **`scores` no cambia de esquema ni de significado.** Sigue siendo el historial del marcador y su consulta no varía.
+- **`setup_db.py` deja de borrar `goldilocks.db` por defecto.** Este es el cambio que protege de verdad las puntuaciones.
+- **Nombres heredados reservados:** un nombre que ya figure en `scores` y no tenga cuenta no se puede registrar. La comparación no distingue mayúsculas. Así nadie hereda las puntuaciones de un antiguo invitado.
+- **Escrituras nuevas:** al capturar una bandera, se inserta en `scores` con el nombre del participante validado en el servidor, nunca con el de la cookie.
+- **Orden de escritura:** primero `participants.db` y después `scores`, de forma idempotente. Si la segunda escritura falla, se puede reconstruir desde la primera.
+- **Copia previa:** antes de desplegar la nueva versión sobre datos reales, se copia `goldilocks.db`.
+
+### L.6 Sesiones (propuesto)
+
+| Elemento | Hoy | Propuesta |
+|---|---|---|
+| Identidad | Nombre dentro de la cookie de Flask | Token aleatorio en una cookie propia, HttpOnly y SameSite=Lax. La base guarda solo su hash. El token se renueva en cada inicio de sesión y se revoca al salir |
+| Contraseñas | No hay cuentas | Hash scrypt con sal. Longitud mínima y límite de intentos fallidos |
+| Cookie de Flask | Todo el estado de la partida | Solo el rol (para `privesc`), el nivel de dificultad y los avisos flash |
+| Rol `admin` | Solo lo usa `privesc` | Sigue en la cookie y solo desbloquea la bandera de `privesc`. Ninguna función real de administración puede depender de él |
+
+**`privesc` sin suplantación:** el jugador puede descifrar su cookie de Flask, cambiar el rol y volver a firmarla con la clave filtrada. La identidad viaja en otra cookie, que no se firma con esa clave y se valida contra `participants.db`. Por eso falsificar la cookie de Flask no permite hacerse pasar por otro participante.
+
+### L.7 Validación del prólogo y bloqueo de rutas directas (propuesto)
+
+**En cada petición:**
+1. Se obtiene el participante a partir del token y de `participants.db`. Si el token no existe, caducó o fue revocado, no hay participante.
+2. Se clasifica la ruta y se aplica la regla de su grupo. Cualquier ruta no clasificada cae en el grupo más restrictivo, así que las rutas nuevas quedan protegidas por defecto.
+
+| Grupo | Rutas | Regla |
+|---|---|---|
+| Públicas | Portada, registro, inicio de sesión, estáticos | Sin requisitos |
+| Públicas del laboratorio | `/robots.txt`, `/despensa_secreta`, `/admin`, `/admin/config` | Sin requisitos, porque `dirb`, `curl` y `flask-unsign` las usan sin cookie. No dan acceso al mapa, y sus banderas solo se pueden enviar tras el prólogo |
+| Solo autenticadas | Puerta del Guardián, salida | Participante válido |
+| Juego | Todas las demás: mapa, retos, pistas, envío de banderas, marcador, reinicio, `/state.json`, derrota | Participante válido **y** prólogo superado en `participants.db`. Las peticiones JSON reciben un error, no una redirección |
+
+- La superación **nunca** se lee de la cookie. Solo la ruta del Guardián puede escribirla, con la identidad del servidor.
+- `/start` conserva su nombre, pero ya no crea invitados. Redirige al paso que le falte al participante.
+- Una prueba automática recorre todas las rutas de Flask y comprueba que ninguna de juego responda sin sesión o sin prólogo.
+
+### L.8 Inyección SQL controlada del Guardián (propuesto)
+
+- **Separación de operaciones:** las operaciones seguras están en un módulo de participantes, con consultas parametrizadas sobre `participants.db`. La consulta vulnerable está en otro módulo que solo abre `cernicalo.db`.
+- **Conexión de solo lectura:** `cernicalo.db` se abre en modo de solo lectura, con el bloqueo de escrituras de SQLite activado.
+- **Autorizador de SQLite:** permite solo SELECT, lecturas de las tablas del laboratorio y una lista blanca de funciones. Rechaza ATTACH, PRAGMA y cualquier escritura.
+- **Una sola sentencia:** el controlador de Python rechaza las consultas apiladas.
+- **Límites:** tamaño máximo de la entrada, contador de pasos para cortar consultas costosas y límite de intentos por participante.
+- **Errores:** solo el mensaje de SQLite, sin trazas ni rutas del sistema.
+- **Transparencia:** la consulta ejecutada se muestra escapada en la interfaz.
+- **Criterio de superación:** la consulta vulnerable devuelve al menos una fila. Como la clave del Guardián es aleatoria y no se publica, solo se puede entrar mediante inyección.
+- **Registro:** al superarlo, se escribe en `prologue` (y desde la etapa 2 se crea la partida con el inicio del cronómetro). Después se redirige al mapa. No se escribe nada en `scores`.
+
+**Aislamiento de los retos existentes:** `sqli_login` y `sqli_medium` siguen conectándose solo a `goldilocks.db`. SQLite no permite adjuntar otra base desde una sentencia SELECT, así que la separación en archivos ya los aísla de las bases nuevas. Sus vulnerabilidades se mantienen sin cambios.
+
+### L.9 Migración progresiva del progreso (propuesto)
+
+| Etapa | Pasa al servidor | Sigue en la cookie | Riesgo residual |
+|---|---|---|---|
+| 1 | Identidad, sesiones, prólogo, nombre en `scores` | Partida completa, vinculada al participante: si no coincide, se descarta | El jugador puede alterar su propio HUD. No afecta al marcador ni a otros participantes |
+| 2 | Cronómetro, penalizaciones, detección y pistas | Banderas de la partida | Bajo |
+| 3 | Banderas de la partida | Solo rol, nivel y avisos | Ninguno conocido en la cookie |
+
+- **Salir de la sesión** ya no borra la partida. El cronómetro sigue corriendo en tiempo real, igual que hoy.
+- **Reiniciar** cierra la partida y abre otra. No borra `scores` ni obliga a repetir el prólogo.
+
+### L.10 Riesgos técnicos pendientes
+
+| Riesgo | Gravedad | Propuesta |
+|---|---|---|
+| `webshell` ejecuta comandos con el mismo usuario que Flask, que puede leer y modificar `participants.db` y `cernicalo.db` | **Crítica** | Ejecutar los comandos con un usuario del sistema dedicado y sin permisos sobre esas bases (relacionado con K.6). Mientras tanto, hashes con sal y tokens guardados como hash impiden reutilizar lo leído. Con Windows sin aislar, usar solo cuentas de prueba |
+| El contenedor corre como `root` | Alta | Usuario sin privilegios en el `Dockerfile` (K.5) |
+| `xss_stored` comparte comentarios entre participantes. Un script plantado se ejecuta en el navegador de otros y puede actuar en su nombre | Alta | Muro de comentarios separado por participante. El reto se conserva |
+| `/reset` y `/logout` por GET: un enlace con XSS reflejado puede reiniciar la partida de otro jugador | Media | Pasar a POST con token CSRF, manteniendo la ruta. Tokens CSRF también en registro, login, pistas y banderas |
+| Sin HTTPS, el token viaja en claro por la red del laboratorio | Media | Aceptarlo dentro de la red aislada, o servir con TLS y marcar la cookie como Secure |
+| Fuerza bruta en el login | Media | Límite de intentos por usuario y por IP |
+| `uploads/` común a todos | Media | Subcarpeta por participante, manteniendo la ruta `/uploads/<archivo>` |
+| Escritura en dos bases sin transacción común | Baja | Orden e idempotencia (L.5) |
+| `goldilocks.db` versionada | Media | Excluir las tres bases en `.gitignore` y sacar `goldilocks.db` del índice, adaptando el arranque de Docker |
+| Encaje con la «Fase 0 de 3 retos» confirmada en la sección I | Media | Decidir si el Guardián es el primer reto de la Fase 0 o un prólogo previo |
+| Docker sigue sin validarse por reto (K.4) | Media | Validarlo con los criterios de K.9 |
+
+### L.11 Archivos afectados por la implementación
+
+| Archivo | Cambio previsto |
+|---|---|
+| `app.py` | Clasificación de rutas, carga de identidad, rutas de registro, login, salida y Guardián, `/start` sin invitados, escritura de puntuaciones con identidad del servidor, progreso por etapas |
+| Módulo nuevo de participantes | Operaciones seguras sobre `participants.db` e inicialización de sus migraciones |
+| Módulo nuevo del Cernícalo | Inicialización de `cernicalo.db` y ejecución vulnerable controlada |
+| `setup_db.py` | No destructivo por defecto, respeto de las rutas configurables, llamada a la inicialización |
+| `templates/index.html` | Pestañas de inicio de sesión y registro sobre la escena actual |
+| Plantilla nueva del Guardián | Formulario vulnerable y visor de la consulta |
+| `templates/base.html`, `templates/lose.html` | Reinicio y salida por formulario POST; nombre del HUD tomado del servidor |
+| `static/css/style.css` | Pestañas, puerta del Guardián y visor de la consulta |
+| `Dockerfile`, `docker-entrypoint.sh`, `compose.yaml` | Rutas de las tres bases, usuario sin privilegios, generación de `goldilocks.db` si falta |
+| `.gitignore` | Excluir las tres bases |
+| `INSTALL.md`, `SOLUCIONARIO.md`, este documento | Nuevo flujo, inicialización y solución del prólogo, solo en la documentación privada |
+| Pruebas nuevas | Rutas protegidas, ausencia de escrituras desde la inyección, aislamiento entre participantes |

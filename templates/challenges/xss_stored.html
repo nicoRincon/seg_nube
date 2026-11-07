@@ -1,17 +1,13 @@
 {% extends 'base.html' %}
-{% from '_macros.html' import challenge_header, briefing, hints, flag_form, detect_bar, nav_buttons %}
-{% block title %}La Silla Rota — Goldilocks CTF{% endblock %}
+{% from '_storybook.html' import storybook with context %}
+{% block title %}{{ ch.name }} — RicitosFlow{% endblock %}
 
 {% block content %}
-<div class="wrap narrow">
-  {{ challenge_header(ch) }}
-  <p class="lead">"Ricitos se sentó en la silla de Osito y la rompió… pero antes dejó una nota que todos leerán."</p>
-
-  {{ detect_bar(g_detection) }}
-  {{ briefing(ch) }}
-
-  <div class="card" style="border-color:var(--yellow);box-shadow:0 0 20px rgba(253,224,71,0.22);">
-    <div class="card-title">📝 Muro de recados</div>
+{% call storybook(ch, art='img/reto_2_1_cojin_equivocado.png',
+                  art_alt='Sofá de la sala con tres cojines, el del centro bordado con una huella de oso',
+                  tale='Entre los cojines del sofá, Ricitos dejó uno que no era de la casa… y el primer oso que se siente en él se llevará la sorpresa sin darse cuenta.') %}
+  <div class="card storybook-console">
+    <div class="card-title"><img class="sbn-console-ico" src="{{ url_for('static', filename='img/storybook/console-rune.svg') }}" alt="" width="22" height="22"> Muro de recados</div>
     <form method="POST" action="{{ url_for('challenge_xss_stored') }}">
       <div class="field">
         <label>Deja un recado</label>
@@ -55,10 +51,5 @@
       {% endif %}
     {% endif %}
   </div>
-
-  {{ hints(ch, hint_cost_min, hint_cost_pts) }}
-  {{ flag_form(ch, g_solved) }}
-
-  {{ nav_buttons(ch) }}
-</div>
+{% endcall %}
 {% endblock %}

@@ -1,17 +1,13 @@
 {% extends 'base.html' %}
-{% from '_macros.html' import challenge_header, briefing, hints, flag_form, detect_bar, nav_buttons %}
-{% block title %}La Cama de Mamá Osa — Goldilocks CTF{% endblock %}
+{% from '_storybook.html' import storybook with context %}
+{% block title %}{{ ch.name }} — RicitosFlow{% endblock %}
 
 {% block content %}
-<div class="wrap narrow">
-  {{ challenge_header(ch) }}
-  <p class="lead">"La cama de Mamá Osa era muy blanda: filtra la comilla simple y cree que ya está a salvo."</p>
-
-  {{ detect_bar(g_detection) }}
-  {{ briefing(ch) }}
-
-  <div class="card" style="border-color:var(--yellow);box-shadow:0 0 20px rgba(253,224,71,0.22);">
-    <div class="card-title">🧪 Buscador de recetas <span style="font-size:0.75rem;color:var(--text-faint);">(nivel {{ g_level }})</span></div>
+{% call storybook(ch, art='img/reto_1_2_cuchara_coincidencia.png',
+                  art_alt='Cuchara de madera junto al caldero de recetas de Mamá Osa',
+                  tale='Mamá Osa apartó la cuchara de las comillas simples y creyó el caldero a salvo… pero otra cuchara, por pura coincidencia, también remueve el fondo.') %}
+  <div class="card storybook-console">
+    <div class="card-title"><img class="sbn-console-ico" src="{{ url_for('static', filename='img/storybook/console-rune.svg') }}" alt="" width="22" height="22"> Buscador de recetas <span style="font-size:0.75rem;color:var(--text-faint);">(nivel {{ g_level }})</span></div>
     <form method="POST" action="{{ url_for('challenge_sqli_medium') }}">
       <div class="field">
         <label>Ingrediente</label>
@@ -44,10 +40,5 @@
     <div class="code-block" style="margin-top:1rem;">safe = raw.replace("'", "")          # solo filtra la comilla simple
 sql  = f'SELECT name, description FROM recipes WHERE ingredient = "{safe}"'</div>
   </div>
-
-  {{ hints(ch, hint_cost_min, hint_cost_pts) }}
-  {{ flag_form(ch, g_solved) }}
-
-  {{ nav_buttons(ch) }}
-</div>
+{% endcall %}
 {% endblock %}

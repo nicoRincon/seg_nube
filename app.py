@@ -1,5 +1,5 @@
 """
-Goldilocks CTF — Aplicación principal
+RicitosFlow CTF — Aplicación principal
 Flask + SQLite · Plataforma educativa CTF
 Universidad de Cundinamarca
 ⚠ SOLO PARA USO EDUCATIVO EN ENTORNOS CONTROLADOS
@@ -14,12 +14,19 @@ import base64
 import sqlite3
 import hashlib
 import subprocess
+import mimetypes
 from functools import wraps
 from flask import (
     Flask, render_template, request, redirect, url_for,
     session, flash, send_from_directory, send_file, g, jsonify, make_response
 )
 from werkzeug.utils import secure_filename
+
+import participants_store      # cuentas de participantes (operaciones seguras)
+import cernicalo_lab           # prólogo «El Guardián del Cernícalo» (SQLi controlada)
+
+# Windows no siempre registra .webp: sin esto el logo se sirve como octet-stream
+mimetypes.add_type('image/webp', '.webp')
 
 # ──────────────────────────────────────────────────────
 # Configuración
@@ -38,6 +45,17 @@ DOCS_DIR   = os.path.join(BASE_DIR, 'static', 'docs')
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(FLAGS_DIR,  exist_ok=True)
 os.makedirs(DOCS_DIR,   exist_ok=True)
+
+# Acceso de participantes y prólogo del Guardián: bases propias, independientes
+# de goldilocks.db (que sigue siendo la de los retos y las puntuaciones).
+PARTICIPANTS_DB_PATH = os.environ.get('RICITOS_PARTICIPANTS_DB_PATH',
+                                      os.path.join(BASE_DIR, 'participants.db'))
+CERNICALO_DB_PATH    = os.environ.get('RICITOS_CERNICALO_DB_PATH',
+                                      os.path.join(BASE_DIR, 'cernicalo.db'))
+AUTH_COOKIE          = 'rf_auth'
+
+participants_store.init_db(PARTICIPANTS_DB_PATH)
+cernicalo_lab.init_db(CERNICALO_DB_PATH)
 
 # ──────────────────────────────────────────────────────
 # Parámetros del juego
@@ -85,11 +103,11 @@ PHASES = [
 # Metadatos de cada desafío (orden = orden de juego)
 CHALLENGES_META = [
     # ── Fase 1 ──────────────────────────────────────────
-    {'id': 'nmap', 'phase': 1, 'name': 'La Sopa de Osito', 'icon': '🍜',
+    {'id': 'nmap', 'phase': 1, 'name': 'El Fondo de la Olla', 'icon': '🍜',
      'category': 'Nmap · Hosts activos', 'pts': 75, 'interactive': True,
      'endpoint': 'challenge_nmap',
      'brief': 'Escanea la red 192.168.56.0/24 e identifica los hosts activos y '
-              'sus servicios. La bandera está en el banner de un puerto no estándar '
+              'sus servicios. La huella está en el banner de un puerto no estándar '
               'del host correcto.',
      'hints': [
          'Empieza con un barrido de host: <code>nmap -sn 192.168.56.0/24</code>. '
@@ -97,19 +115,19 @@ CHALLENGES_META = [
          'Sobre el host vivo lanza <code>nmap -sS -sV -p- 192.168.56.12</code>. '
          'Fíjate en el puerto <code>1337</code> y lee su banner.',
      ]},
-    {'id': 'dork', 'phase': 1, 'name': 'La Sopa de Mamá Osa', 'icon': '🔎',
+    {'id': 'dork', 'phase': 1, 'name': 'Las Huellas en la Entrada', 'icon': '🔎',
      'category': 'Google Dorks · Archivo expuesto', 'pts': 75, 'interactive': True,
      'endpoint': 'challenge_dork',
      'brief': 'Un archivo interno quedó publicado sin querer. Usa operadores de '
               'búsqueda (<code>site:</code>, <code>filetype:</code>) para dar con él. '
-              'La bandera está en su contenido.',
+              'La huella está en su contenido.',
      'hints': [
          'Prueba <code>site:goldilocks.ctf filetype:txt</code> o revisa '
          '<code>/robots.txt</code> para ver qué carpetas hay.',
          'El archivo se llama <code>informe_seguridad_osos.txt</code> y vive bajo '
          '<code>/static/docs/</code>.',
      ]},
-    {'id': 'dirb', 'phase': 1, 'name': 'La Sopa de Papá Oso', 'icon': '📁',
+    {'id': 'dirb', 'phase': 1, 'name': 'La Puerta Entornada', 'icon': '🚪',
      'category': 'Dirb · Ruta oculta', 'pts': 75, 'interactive': True,
      'endpoint': 'challenge_dirb',
      'brief': 'Hay una ruta del servidor que no está enlazada en ninguna página. '
@@ -119,11 +137,11 @@ CHALLENGES_META = [
          'Busca códigos 200/301 fuera de lo común.',
          'La despensa de los osos está en <code>/despensa_secreta</code>.',
      ]},
-    {'id': 'wireshark', 'phase': 1, 'name': 'El Camino al Bosque', 'icon': '🛰️',
+    {'id': 'wireshark', 'phase': 1, 'name': 'Los Ojos que Vigilan', 'icon': '🛰️',
      'category': 'Wireshark · Credenciales', 'pts': 75, 'interactive': True,
      'endpoint': 'challenge_wireshark',
      'brief': 'Se capturó tráfico de la red de los osos. Alguien envió credenciales '
-              'en texto claro. Descarga la captura y extrae la bandera.',
+              'en texto claro. Descarga la captura y extrae la huella.',
      'hints': [
          'Abre la captura y filtra por <code>http.request.method == "POST"</code> '
          'o busca la cabecera <code>Authorization: Basic</code>.',
@@ -131,7 +149,7 @@ CHALLENGES_META = [
          'Decodifícalo: <code>echo &lt;valor&gt; | base64 -d</code>.',
      ]},
     # ── Fase 2 ──────────────────────────────────────────
-    {'id': 'sqli_login', 'phase': 2, 'name': 'La Cama de Osito', 'icon': '🛏️',
+    {'id': 'sqli_login', 'phase': 2, 'name': 'El Tazón Demasiado Caliente', 'icon': '🥣',
      'category': 'SQLi · Bypass de login', 'pts': 75, 'interactive': True,
      'endpoint': 'challenge_sqli_login',
      'brief': 'El formulario de acceso concatena tu entrada directamente en la '
@@ -140,21 +158,21 @@ CHALLENGES_META = [
          "Payload clásico en el usuario: <code>' OR '1'='1'#</code> "
          "(o <code>admin'--</code>).",
          'Al entrar como <code>admin</code> sin contraseña válida, el panel te '
-         'muestra la bandera.',
+         'muestra la huella.',
      ]},
-    {'id': 'sqli_medium', 'phase': 2, 'name': 'La Cama de Mamá Osa', 'icon': '🧪',
+    {'id': 'sqli_medium', 'phase': 2, 'name': 'La Cuchara de la Coincidencia', 'icon': '🥄',
      'category': 'SQLi Medium · Burp Suite', 'pts': 75, 'interactive': True,
      'endpoint': 'challenge_sqli_medium',
      'brief': 'El buscador de recetas filtra la comilla simple. Evádelo (comillas '
               'dobles, codificación) — interceptando la petición con Burp si hace falta '
-              '— y saca la bandera de la base de datos.',
+              '— y saca la huella de la base de datos.',
      'hints': [
          'La comilla simple <code>\'</code> se elimina, pero la comilla doble '
          '<code>"</code> no. Prueba <code>" OR 1=1--</code>.',
-         'La bandera está en la columna <code>secret</code> de la tabla '
+         'La huella está en la columna <code>secret</code> de la tabla '
          '<code>recipes</code>: <code>" UNION SELECT name, secret FROM recipes--</code>.',
      ]},
-    {'id': 'xss_reflected', 'phase': 2, 'name': 'La Cama de Papá Oso', 'icon': '🪞',
+    {'id': 'xss_reflected', 'phase': 2, 'name': 'La Cama de los Recuerdos', 'icon': '🪞',
      'category': 'XSS Reflejado · Cookie', 'pts': 75, 'interactive': True,
      'endpoint': 'challenge_xss_reflected',
      'brief': 'El saludo de la página refleja un parámetro sin sanear. Inyecta '
@@ -163,9 +181,9 @@ CHALLENGES_META = [
      'hints': [
          'Prueba <code>?nombre=&lt;script&gt;alert(document.cookie)&lt;/script&gt;</code>.',
          'La cookie <code>bear_session</code> es Base64. Decodifícala para leer la '
-         'bandera.',
+         'huella.',
      ]},
-    {'id': 'xss_stored', 'phase': 2, 'name': 'La Silla Rota', 'icon': '🪑',
+    {'id': 'xss_stored', 'phase': 2, 'name': 'El Cojín Equivocado', 'icon': '🪑',
      'category': 'XSS Almacenado · BeEF', 'pts': 75, 'interactive': True,
      'endpoint': 'challenge_xss_stored',
      'brief': 'El muro de recados guarda los comentarios tal cual. Deja un payload '
@@ -176,35 +194,35 @@ CHALLENGES_META = [
          '&lt;/script&gt;</code>.',
          'El bot administrador revisa el muro cada minuto. Pulsa "Simular visita del '
          'oso admin": si hay un <code>&lt;script&gt;</code> guardado, BeEF engancha y '
-         'aparece la bandera.',
+         'aparece la huella.',
      ]},
     # ── Fase 3 ──────────────────────────────────────────
     {'id': 'webshell', 'phase': 3, 'name': 'Papá Oso Despierta', 'icon': '🐚',
      'category': 'Webshell · RCE', 'pts': 75, 'interactive': True,
      'endpoint': 'challenge_webshell',
      'brief': 'La galería de fotos del bosque no valida bien lo que subes. Sube una '
-              'webshell, consigue ejecución de comandos y lee la bandera del sistema.',
+              'webshell, consigue ejecución de comandos y lee la huella del sistema.',
      'hints': [
          'Sube <code>shell.py</code> y ábrelo con <code>/uploads/shell.py?cmd=id</code>.',
-         'La bandera está en <code>/flags/papa_oso.txt</code>: '
+         'La huella está en <code>/flags/papa_oso.txt</code>: '
          '<code>?cmd=cat /flags/papa_oso.txt</code>.',
      ]},
     {'id': 'metasploit', 'phase': 3, 'name': 'Mamá Osa Despierta', 'icon': '🎯',
      'category': 'Metasploit · Exploit', 'pts': 75, 'interactive': True,
      'endpoint': 'challenge_metasploit',
      'brief': 'El host Metasploitable 2 corre un servicio vulnerable conocido. Con '
-              '<code>msfconsole</code> consigue una sesión y busca la bandera en el '
+              '<code>msfconsole</code> consigue una sesión y busca la huella en el '
               'sistema comprometido.',
      'hints': [
          'El puerto <code>6200</code> (vsftpd 2.3.4) tiene una backdoor. '
          '<code>use exploit/unix/ftp/vsftpd_234_backdoor</code>.',
          'Con la shell: <code>cat /home/msfadmin/mama_osa.flag</code>.',
      ]},
-    {'id': 'privesc', 'phase': 3, 'name': 'Osito Despierta', 'icon': '🔑',
+    {'id': 'privesc', 'phase': 3, 'name': 'La Firma del Osito', 'icon': '🔑',
      'category': 'PrivEsc · Root', 'pts': 75, 'interactive': True,
      'endpoint': 'challenge_privesc',
      'brief': 'Ya tienes una shell de usuario limitado. Escala a root revisando '
-              'permisos <code>sudo</code> y binarios SUID mal configurados. La bandera '
+              'permisos <code>sudo</code> y binarios SUID mal configurados. La huella '
               'está en <code>/root/flag.txt</code>. (En esta plataforma: escala tu rol '
               'de sesión a <code>admin</code>.)',
      'hints': [
@@ -214,7 +232,7 @@ CHALLENGES_META = [
          'Cookies) o revisa <code>/admin/config</code> para firmar la sesión con '
          '<code>flask-unsign</code>.',
      ]},
-    {'id': 'stego', 'phase': 3, 'name': '¡Ricitos de Oro Escapa!', 'icon': '🖼️',
+    {'id': 'stego', 'phase': 3, 'name': 'El Secreto del Lienzo', 'icon': '🖼️',
      'category': 'Esteganografía · steghide', 'pts': 75, 'interactive': True,
      'endpoint': 'challenge_stego',
      'brief': 'La prueba final: una imagen del cuadro del pasillo esconde datos con '
@@ -252,6 +270,59 @@ def query_db(sql, args=(), one=False):
     return (rv[0] if rv else None) if one else rv
 
 # ──────────────────────────────────────────────────────
+# Progreso persistente (goldilocks.db)
+# La base es la fuente de verdad: `scores` guarda las huellas registradas y
+# `hint_unlocks` las pistas abiertas. La sesión de Flask solo es una copia que
+# se rehidrata al entrar, así el dashboard y el marcador cuentan lo mismo.
+# ──────────────────────────────────────────────────────
+def init_progress_db():
+    """Crea la tabla de pistas si falta. Idempotente; no borra datos."""
+    db = sqlite3.connect(DB_PATH)
+    try:
+        db.execute("""
+            CREATE TABLE IF NOT EXISTS hint_unlocks (
+                id        INTEGER PRIMARY KEY AUTOINCREMENT,
+                username  TEXT    NOT NULL,
+                hint_key  TEXT    NOT NULL,
+                pts       INTEGER NOT NULL,
+                UNIQUE(username, hint_key)
+            )""")
+        db.commit()
+    finally:
+        db.close()
+
+init_progress_db()
+
+def load_progress(username):
+    """Huellas registradas y pistas abiertas de un participante, desde la base."""
+    db = sqlite3.connect(DB_PATH)
+    try:
+        solved = [r[0] for r in db.execute(
+            'SELECT challenge FROM scores WHERE username = ? ORDER BY id', (username,))
+            if r[0] in FLAGS]
+        hints = [r[0] for r in db.execute(
+            'SELECT hint_key FROM hint_unlocks WHERE username = ? ORDER BY id', (username,))]
+    finally:
+        db.close()
+    return solved, hints
+
+def restore_progress(username):
+    """Copia a la sesión el progreso guardado (huellas, pistas y su descuento)."""
+    solved, hints = load_progress(username)
+    session['solved'] = solved
+    session['hints'] = hints
+    session['penalty_points'] = len(hints) * HINT_PENALTY_P
+
+def score_owner():
+    """Nombre bajo el que se guardan los puntos: el de la cuenta autenticada
+    (cookie rf_auth validada contra participants.db), no el de la cookie de
+    sesión, que el reto privesc permite falsificar."""
+    participant = current_participant()
+    if participant:
+        return participant['username']
+    return session.get('username', 'ricitos')
+
+# ──────────────────────────────────────────────────────
 # Estado del juego (temporizador · detección · puntaje)
 # ──────────────────────────────────────────────────────
 def game_started():
@@ -277,6 +348,7 @@ def reset_game():
     session.clear()
     session['level'] = keep_level
     start_game(keep_user, keep_role, keep_guest)
+    restore_progress(score_owner())      # el cronómetro se reinicia; las huellas guardadas no
 
 def get_solved():
     return session.get('solved', [])
@@ -363,19 +435,120 @@ def challenge_nav(cid):
 app.jinja_env.globals['challenge_nav'] = challenge_nav
 
 # ──────────────────────────────────────────────────────
+# Acceso de participantes (participants.db)
+# La identidad viaja en una cookie propia (HttpOnly) validada contra la base,
+# no en la cookie de sesión de Flask, que el reto privesc permite falsificar.
+# ──────────────────────────────────────────────────────
+def current_participant():
+    if 'participant' not in g:
+        g.participant = participants_store.get_session_participant(
+            PARTICIPANTS_DB_PATH, request.cookies.get(AUTH_COOKIE))
+    return g.participant
+
+def _login_response(participant_id, target):
+    """Abre una sesión nueva para el participante y redirige."""
+    participants_store.revoke_session(PARTICIPANTS_DB_PATH, request.cookies.get(AUTH_COOKIE))
+    token = participants_store.create_session(PARTICIPANTS_DB_PATH, participant_id)
+    resp = redirect(target)
+    resp.set_cookie(AUTH_COOKIE, token, max_age=participants_store.SESSION_TTL,
+                    httponly=True, samesite='Lax', secure=request.is_secure)
+    return resp
+
+def _begin_game(participant):
+    """Arranca la partida con el sistema de progreso existente (sin cambios)."""
+    start_game(username=participant['username'], role='guest', guest=True)
+    restore_progress(participant['username'])
+    flash('La partida ha comenzado. Los osos volverán en 120 minutos.', 'info')
+
+# ──────────────────────────────────────────────────────
 # Portada / arranque de partida
 # ──────────────────────────────────────────────────────
 @app.route('/')
 def index():
     if game_started() and not game_over():
         return redirect(url_for('dashboard'))
-    return render_template('index.html')
+    if current_participant():
+        return redirect(url_for('guardian'))
+    tab = request.args.get('tab')
+    return render_template('index.html', tab=tab if tab in ('login', 'registro') else 'login')
+
+@app.route('/login', methods=['POST'])
+def login():
+    username = request.form.get('username', '').strip()
+    password = request.form.get('password', '')
+    participant = participants_store.authenticate(PARTICIPANTS_DB_PATH, username, password)
+    if not participant:
+        flash('Usuario o contraseña incorrectos.', 'danger')
+        return render_template('index.html', tab='login', form_user=username)
+    session.clear()                       # sin restos de una partida anterior en este navegador
+    if participants_store.prologue_cleared(PARTICIPANTS_DB_PATH, participant['id']):
+        # El Guardián ya lo dejó pasar antes: directo al mapa, sin repetir el prólogo
+        _begin_game(participant)
+        return _login_response(participant['id'], url_for('dashboard'))
+    return _login_response(participant['id'], url_for('guardian'))
+
+@app.route('/registro', methods=['POST'])
+def register():
+    username = request.form.get('username', '').strip()
+    password = request.form.get('password', '')
+    confirm  = request.form.get('confirm', '')
+    error = participants_store.validate_registration(username, password, confirm)
+    if not error:
+        # Nombres con puntuaciones históricas (invitados anteriores) quedan reservados
+        # para que nadie herede puntos ajenos. Solo lectura sobre goldilocks.db.
+        legacy = query_db('SELECT 1 FROM scores WHERE lower(username) = lower(?) LIMIT 1',
+                          (username,), one=True)
+        if legacy and not participants_store.username_exists(PARTICIPANTS_DB_PATH, username):
+            error = 'Ese nombre ya aparece en el marcador. Elige otro.'
+    if not error:
+        pid, error = participants_store.create_participant(PARTICIPANTS_DB_PATH, username, password)
+    if error:
+        flash(error, 'danger')
+        return render_template('index.html', tab='registro', form_user=username)
+    session.clear()
+    flash('Cuenta creada. El Guardián del Cernícalo te espera en la puerta del bosque.', 'success')
+    return _login_response(pid, url_for('guardian'))
+
+# ──────────────────────────────────────────────────────
+# Prólogo · El Guardián del Cernícalo (cernicalo.db)
+# Obligatorio antes del mapa. No da puntos ni toca scores.
+# ──────────────────────────────────────────────────────
+@app.route('/puerta-del-cernicalo', methods=['GET', 'POST'])
+def guardian():
+    participant = current_participant()
+    if not participant:
+        flash('Inicia sesión para llegar a la puerta del bosque.', 'warning')
+        return redirect(url_for('index'))
+    if game_started() and not game_over():
+        return redirect(url_for('dashboard'))
+
+    attempt = None
+    if request.method == 'POST' and not participant['prologue_cleared']:
+        attempt = cernicalo_lab.run_guardian_query(
+            CERNICALO_DB_PATH, request.form.get('vigia', ''), request.form.get('santo', ''))
+        participants_store.record_prologue_attempt(PARTICIPANTS_DB_PATH, participant['id'])
+        if attempt['passed']:
+            participants_store.mark_prologue_cleared(PARTICIPANTS_DB_PATH, participant['id'])
+            participant['prologue_cleared'] = True
+
+    return render_template('guardian.html', participant=participant, attempt=attempt,
+                           cleared=participant['prologue_cleared'],
+                           query_template=cernicalo_lab.QUERY_TEMPLATE.format(
+                               vigia='<vigía>', santo='<santo y seña>'),
+                           guardian_flag=cernicalo_lab.FLAG,
+                           max_input=cernicalo_lab.MAX_INPUT)
 
 @app.route('/start', methods=['POST'])
 def start():
-    name = request.form.get('username', '').strip() or 'ricitos'
-    start_game(username=name, role='guest', guest=True)
-    flash('La partida ha comenzado. Los osos volverán en 120 minutos.', 'info')
+    # Ya no crea invitados: exige cuenta y el prólogo del Guardián superado.
+    participant = current_participant()
+    if not participant:
+        flash('Inicia sesión o regístrate para entrar al bosque.', 'warning')
+        return redirect(url_for('index'))
+    if not participant['prologue_cleared']:
+        return redirect(url_for('guardian'))
+    if not (game_started() and not game_over()):
+        _begin_game(participant)
     return redirect(url_for('dashboard'))
 
 @app.route('/reset')
@@ -387,7 +560,10 @@ def reset():
 @app.route('/logout')
 def logout():
     session.clear()
-    return redirect(url_for('index'))
+    participants_store.revoke_session(PARTICIPANTS_DB_PATH, request.cookies.get(AUTH_COOKIE))
+    resp = redirect(url_for('index'))
+    resp.delete_cookie(AUTH_COOKIE)
+    return resp
 
 @app.route('/set_level/<level>')
 def set_level(level):
@@ -438,6 +614,13 @@ def unlock_hint(cid, n):
     key = hint_key(cid, n)
     hints = session.get('hints', [])
     if key not in hints:
+        db = sqlite3.connect(DB_PATH)
+        try:
+            db.execute('INSERT OR IGNORE INTO hint_unlocks (username, hint_key, pts) VALUES (?,?,?)',
+                       (score_owner(), key, HINT_PENALTY_P))
+            db.commit()
+        finally:
+            db.close()
         hints.append(key)
         session['hints'] = hints
         session['penalty_seconds'] = session.get('penalty_seconds', 0) + HINT_PENALTY_S
@@ -461,25 +644,32 @@ def submit_flag():
 
     solved = session.get('solved', [])
     if cid in solved:
-        flash('Ya capturaste esta bandera.', 'info')
+        flash('Ya registraste esta huella.', 'info')
     elif flag == FLAGS[cid]:
-        solved.append(cid)
-        session['solved'] = solved
         pts = CHALLENGE_PTS[cid]
         try:
             db = sqlite3.connect(DB_PATH)
-            db.execute(
-                'INSERT OR IGNORE INTO scores (username, challenge, pts) VALUES (?,?,?)',
-                (session.get('username', 'ricitos'), cid, pts)
-            )
-            db.commit()
-            db.close()
-        except Exception:
-            pass
-        flash(f'🎉 ¡Bandera correcta! +{pts} PTS.', 'success')
+            try:
+                cur = db.execute(
+                    'INSERT OR IGNORE INTO scores (username, challenge, pts) VALUES (?,?,?)',
+                    (score_owner(), cid, pts))
+                db.commit()
+                is_new = cur.rowcount == 1
+            finally:
+                db.close()
+        except sqlite3.Error:
+            app.logger.exception('No se pudo guardar la huella %s', cid)
+            flash('No se pudo guardar la huella. Inténtalo de nuevo en un momento.', 'danger')
+            return redirect(url_for(ch['endpoint']))
+        solved.append(cid)
+        session['solved'] = solved
+        if is_new:
+            flash(f'🐾 ¡Huella correcta! +{pts} PTS.', 'success')
+        else:
+            flash('Esta huella ya estaba en tu álbum: no suma de nuevo.', 'info')
     else:
         session['detection_hits'] = session.get('detection_hits', 0) + 1
-        flash('Bandera incorrecta. Los osos husmean más cerca…', 'danger')
+        flash('Huella incorrecta. Los osos husmean más cerca…', 'danger')
 
     if game_over():
         return redirect(url_for('lose'))
@@ -775,8 +965,10 @@ def scoreboard():
     try:
         db = sqlite3.connect(DB_PATH)
         rows = db.execute(
-            'SELECT username, COUNT(*) f, SUM(pts) s FROM scores '
-            'GROUP BY username ORDER BY s DESC').fetchall()
+            'SELECT s.username, COUNT(*) f, '
+            '       MAX(0, SUM(s.pts) - COALESCE((SELECT SUM(h.pts) FROM hint_unlocks h '
+            '                                     WHERE h.username = s.username), 0)) sc '
+            'FROM scores s GROUP BY s.username ORDER BY sc DESC, f DESC').fetchall()
         db.close()
         board = [{'username': r[0], 'flags': r[1], 'score': r[2]} for r in rows]
     except Exception:

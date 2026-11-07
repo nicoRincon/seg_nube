@@ -1,32 +1,20 @@
 {% extends 'base.html' %}
-{% from '_macros.html' import challenge_header, briefing, hints, flag_form, detect_bar, nav_buttons %}
-{% block title %}La Sopa de Papá Oso — Goldilocks CTF{% endblock %}
+{% from '_storybook.html' import storybook with context %}
+{% block title %}{{ ch.name }} — RicitosFlow{% endblock %}
 
 {% block content %}
-<div class="wrap narrow">
-  {{ challenge_header(ch) }}
-  <p class="lead">"La sopa de Papá Oso estaba demasiado caliente… la escondió en la despensa que nadie usa."</p>
-
-  {{ detect_bar(g_detection) }}
-  {{ briefing(ch) }}
-
-  <div class="card glow-green">
-    <div class="card-title">📁 Enumeración de directorios</div>
-    <p style="font-size:0.9rem;color:var(--text-dim);">
+{% call storybook(ch, art='img/reto_0_1_puerta_entornada.png',
+                  art_alt='Puerta de madera entornada en el pasillo de la casa de los osos, con luz cálida asomando por la rendija',
+                  tale='Una puerta quedó entornada en el pasillo de los osos. Ningún cartel la nombra, pero detrás aguarda la despensa secreta… para quien sepa llamar a cada puerta.') %}
+  <div class="card storybook-console">
+    <div class="card-title"><img class="sbn-console-ico" src="{{ url_for('static', filename='img/storybook/console-rune.svg') }}" alt="" width="22" height="22"> Enumeración de directorios</div>
+    <p class="storybook-console-intro">
       Ninguna página enlaza a la despensa. En Kali usarías:
     </p>
-    <div class="code-block">$ dirb http://goldilocks.ctf/ /usr/share/wordlists/dirb/common.txt
+    <pre class="code-block storybook-console-output">$ dirb http://goldilocks.ctf/ /usr/share/wordlists/dirb/common.txt
 $ gobuster dir -u http://goldilocks.ctf/ -w /usr/share/wordlists/dirb/common.txt
 
-  ==> DIRECTORY: /despensa_secreta/  (Status: 200)</div>
-    <a href="{{ url_for('despensa_secreta') }}" class="btn btn-outline" target="_blank">
-      Abrir /despensa_secreta ↗
-    </a>
+  ==> DIRECTORY: /despensa_secreta/  (Status: 200)</pre>
   </div>
-
-  {{ hints(ch, hint_cost_min, hint_cost_pts) }}
-  {{ flag_form(ch, g_solved) }}
-
-  {{ nav_buttons(ch) }}
-</div>
+{% endcall %}
 {% endblock %}

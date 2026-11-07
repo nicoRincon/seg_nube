@@ -1,17 +1,13 @@
 {% extends 'base.html' %}
-{% from '_macros.html' import challenge_header, briefing, hints, flag_form, detect_bar, nav_buttons %}
-{% block title %}La Cama de Papá Oso — Goldilocks CTF{% endblock %}
+{% from '_storybook.html' import storybook with context %}
+{% block title %}{{ ch.name }} — RicitosFlow{% endblock %}
 
 {% block content %}
-<div class="wrap narrow">
-  {{ challenge_header(ch) }}
-  <p class="lead">"La cama de Papá Oso era muy dura: te devuelve todo lo que le dices, sin pensarlo."</p>
-
-  {{ detect_bar(g_detection) }}
-  {{ briefing(ch) }}
-
-  <div class="card" style="border-color:var(--yellow);box-shadow:0 0 20px rgba(253,224,71,0.22);">
-    <div class="card-title">🪞 Saludo del oso</div>
+{% call storybook(ch, art='img/reto_3_3_cama_recuerdos.png',
+                  art_alt='Las tres camas de los osos con un álbum de fotos familiares abierto sobre la mesa',
+                  tale='Junto a las camas, el álbum guarda los recuerdos de la casa… y repite en voz alta todo lo que le cuentas, sin preguntar quién lo escribe.') %}
+  <div class="card storybook-console">
+    <div class="card-title"><img class="sbn-console-ico" src="{{ url_for('static', filename='img/storybook/console-rune.svg') }}" alt="" width="22" height="22"> Saludo del oso</div>
     <form method="GET" action="{{ url_for('challenge_xss_reflected') }}">
       <div class="field">
         <label>Tu nombre</label>
@@ -31,13 +27,8 @@
       Está codificada en Base64. Léela con
       <code>document.cookie</code> y decodifícala.
     </p>
-    <div class="code-block">// en la consola del navegador (F12)
-atob(document.cookie.split('bear_session=')[1].split(';')[0])</div>
+    <pre class="code-block storybook-console-output">// en la consola del navegador (F12)
+atob(document.cookie.split('bear_session=')[1].split(';')[0])</pre>
   </div>
-
-  {{ hints(ch, hint_cost_min, hint_cost_pts) }}
-  {{ flag_form(ch, g_solved) }}
-
-  {{ nav_buttons(ch) }}
-</div>
+{% endcall %}
 {% endblock %}

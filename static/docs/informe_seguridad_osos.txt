@@ -5,4 +5,4 @@ Clasificación: CONFIDENCIAL · No publicar
 2. La ventana de la cocina no cierra bien.
 3. Ricitos de Oro fue vista rondando el bosque.
 
-Token de auditoría: CTF{mama_bosque_dork_archivo_expuesto}
+Token de auditoría: BOSQUE{mama_dork_archivo_expuesto}

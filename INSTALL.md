@@ -63,26 +63,26 @@ Cada pista desbloqueada cuesta **−5 min** y **−25 pts**. Si el cronómetro l
 ### Fase 1 — El Bosque (Reconocimiento) · Verde
 | Desafío | Técnica | Bandera |
 |---|---|---|
-| La Sopa de Osito | Nmap · hosts activos | `CTF{osito_bosque_nmap_hosts_activos}` |
-| La Sopa de Mamá Osa | Google Dorks · archivo expuesto | `CTF{mama_bosque_dork_archivo_expuesto}` |
-| La Sopa de Papá Oso | Dirb · ruta oculta | `CTF{papa_bosque_dirb_ruta_oculta}` |
-| El Camino al Bosque | Wireshark · credenciales | `CTF{ricitos_bosque_wireshark_credenciales}` |
+| La Sopa de Osito | Nmap · hosts activos | `BOSQUE{osito_nmap_hosts_activos}` |
+| La Sopa de Mamá Osa | Google Dorks · archivo expuesto | `BOSQUE{mama_dork_archivo_expuesto}` |
+| La Sopa de Papá Oso | Dirb · ruta oculta | `BOSQUE{papa_dirb_ruta_oculta}` |
+| El Camino al Bosque | Wireshark · credenciales | `BOSQUE{ricitos_wireshark_credenciales}` |
 
 ### Fase 2 — La Casa (Explotación Web) · Dorado
 | Desafío | Técnica | Bandera |
 |---|---|---|
-| La Cama de Osito | SQLi · bypass de login | `CTF{osito_casa_sqli_bypass_login}` |
-| La Cama de Mamá Osa | SQLi Medium · Burp Suite | `CTF{mama_casa_sqli_burp_medium}` |
-| La Cama de Papá Oso | XSS reflejado · cookie | `CTF{papa_casa_xss_reflected_cookie}` |
-| La Silla Rota | XSS almacenado · BeEF | `CTF{ricitos_casa_xss_stored_beef_hook}` |
+| La Cama de Osito | SQLi · bypass de login | `CASA{osito_sqli_bypass_login}` |
+| La Cama de Mamá Osa | SQLi Medium · Burp Suite | `CASA{mama_sqli_burp_medium}` |
+| La Cama de Papá Oso | XSS reflejado · cookie | `CASA{papa_xss_reflected_cookie}` |
+| La Silla Rota | XSS almacenado · BeEF | `CASA{ricitos_xss_stored_beef_hook}` |
 
 ### Fase 3 — Las Habitaciones (Escalada) · Rojo
 | Desafío | Técnica | Bandera |
 |---|---|---|
-| Papá Oso Despierta | Webshell · RCE | `CTF{papa_habitacion_webshell_rce}` |
-| Mamá Osa Despierta | Metasploit · exploit | `CTF{mama_habitacion_metasploit_exploit}` |
-| Osito Despierta | PrivEsc · root | `CTF{osito_habitacion_privesc_root}` |
-| ¡Ricitos de Oro Escapa! | Esteganografía · steghide | `CTF{ricitos_habitacion_steghide_final}` |
+| Papá Oso Despierta | Webshell · RCE | `HABITACION{papa_webshell_rce}` |
+| Mamá Osa Despierta | Metasploit · exploit | `HABITACION{mama_metasploit_exploit}` |
+| Osito Despierta | PrivEsc · root | `HABITACION{osito_privesc_root}` |
+| ¡Ricitos de Oro Escapa! | Esteganografía · steghide | `HABITACION{ricitos_steghide_final}` |
 
 ---
 
@@ -96,7 +96,7 @@ Cada pista desbloqueada cuesta **−5 min** y **−25 pts**. Si el cronómetro l
   `/static/docs/informe_seguridad_osos.txt` → bandera en el contenido.
 - *Dirb*: `dirb http://IP/ common.txt` descubre `/despensa_secreta` (no enlazada).
 - *Wireshark*: descargar `captura_bosque.pcap`, buscar
-  `Authorization: Basic`, decodificar el Base64 → `ricitos:CTF{...}`.
+  `Authorization: Basic`, decodificar el Base64 → `ricitos:BOSQUE{...}`.
 
 **Fase 2**
 - *SQLi login*: usuario `admin'--` o `' OR '1'='1'#`, contraseña cualquiera.
@@ -119,7 +119,7 @@ Cada pista desbloqueada cuesta **−5 min** y **−25 pts**. Si el cronómetro l
   cookie `role` a `admin` (F12) o firmar la sesión con `flask-unsign` usando la
   clave de `/admin/config` (`osito123`).
 - *Stego*: `steghide extract -sf cuadro_del_pasillo.jpg`, contraseña `ricitos`.
-  Sin steghide: `strings cuadro_del_pasillo.png | grep CTF`.
+  Sin steghide: `strings cuadro_del_pasillo.png | grep HABITACION`.
 
 ---
 

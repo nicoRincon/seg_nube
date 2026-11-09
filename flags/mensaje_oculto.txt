@@ -1,2 +1,2 @@
 Los tres osos regresan al amanecer.
-FLAG: CTF{ricitos_habitacion_steghide_final}
+FLAG: HABITACION{ricitos_steghide_final}

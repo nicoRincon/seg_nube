@@ -74,22 +74,26 @@ LAB_TARGET_IP = os.environ.get('GOLDILOCKS_LAB_IP', '192.168.56.115')
 # Flags del CTF — 12 banderas, 3 fases
 # ──────────────────────────────────────────────────────
 FLAGS = {
-    # Fase 1 · El Bosque · Reconocimiento
-    'nmap':          'CTF{osito_bosque_nmap_hosts_activos}',
-    'dork':          'CTF{mama_bosque_dork_archivo_expuesto}',
-    'dirb':          'CTF{papa_bosque_dirb_ruta_oculta}',
-    'wireshark':     'CTF{ricitos_bosque_wireshark_credenciales}',
-    # Fase 2 · La Casa · Explotación Web
-    'sqli_login':    'CTF{osito_casa_sqli_bypass_login}',
-    'sqli_medium':   'CTF{mama_casa_sqli_burp_medium}',
-    'xss_reflected': 'CTF{papa_casa_xss_reflected_cookie}',
-    'xss_stored':    'CTF{ricitos_casa_xss_stored_beef_hook}',
-    # Fase 3 · Las Habitaciones · Escalada
-    'webshell':      'CTF{papa_habitacion_webshell_rce}',
-    'metasploit':    'CTF{mama_habitacion_metasploit_exploit}',
-    'privesc':       'CTF{osito_habitacion_privesc_root}',
-    'stego':         'CTF{ricitos_habitacion_steghide_final}',
+    # Fase 1 · El Bosque · Reconocimiento — formato BOSQUE{...}
+    'nmap':          'BOSQUE{osito_nmap_hosts_activos}',
+    'dork':          'BOSQUE{mama_dork_archivo_expuesto}',
+    'dirb':          'BOSQUE{papa_dirb_ruta_oculta}',
+    'wireshark':     'BOSQUE{ricitos_wireshark_credenciales}',
+    # Fase 2 · La Casa · Explotación Web — formato CASA{...}
+    'sqli_login':    'CASA{osito_sqli_bypass_login}',
+    'sqli_medium':   'CASA{mama_sqli_burp_medium}',
+    'xss_reflected': 'CASA{papa_xss_reflected_cookie}',
+    'xss_stored':    'CASA{ricitos_xss_stored_beef_hook}',
+    # Fase 3 · Las Habitaciones · Escalada — formato HABITACION{...}
+    'webshell':      'HABITACION{papa_webshell_rce}',
+    'metasploit':    'HABITACION{mama_metasploit_exploit}',
+    'privesc':       'HABITACION{osito_privesc_root}',
+    'stego':         'HABITACION{ricitos_steghide_final}',
 }
+
+# Prefijo de formato de bandera por fase (usado en la UI para mostrar el
+# formato correcto en cada reto en vez de un CTF{...} genérico).
+FLAG_PREFIX = {1: 'BOSQUE', 2: 'CASA', 3: 'HABITACION'}
 
 # 75 pts × 12 = 900
 CHALLENGE_PTS = {k: 75 for k in FLAGS}
@@ -243,7 +247,7 @@ CHALLENGES_META = [
          'contraseña.',
          'La contraseña es el nombre de la protagonista en minúsculas y sin tildes: '
          '<code>ricitos</code>. Si no tienes steghide: '
-         '<code>strings cuadro_del_pasillo.png | grep CTF</code>.',
+         '<code>strings cuadro_del_pasillo.png | grep HABITACION</code>.',
      ]},
 ]
 
@@ -398,6 +402,7 @@ def inject_game_state():
         hint_cost_min = HINT_PENALTY_S // 60,
         hint_cost_pts = HINT_PENALTY_P,
         lab_ip        = LAB_TARGET_IP,
+        FLAG_PREFIX   = FLAG_PREFIX,
     )
 
 # ──────────────────────────────────────────────────────
@@ -433,6 +438,7 @@ def challenge_nav(cid):
     return prev_ch, next_ch
 
 app.jinja_env.globals['challenge_nav'] = challenge_nav
+app.jinja_env.globals['FLAG_PREFIX'] = FLAG_PREFIX
 
 # ──────────────────────────────────────────────────────
 # Acceso de participantes (participants.db)

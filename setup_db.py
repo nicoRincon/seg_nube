@@ -22,18 +22,18 @@ for d in (FLAGS_DIR, IMG_DIR, DOCS_DIR):
 
 # ── Flags · 12 banderas / 3 fases ──────────────────────
 FLAGS = {
-    'nmap':          'BOSQUE{osito_nmap_hosts_activos}',
-    'dork':          'BOSQUE{mama_dork_archivo_expuesto}',
-    'dirb':          'BOSQUE{papa_dirb_ruta_oculta}',
-    'wireshark':     'BOSQUE{ricitos_wireshark_credenciales}',
-    'sqli_login':    'CASA{osito_sqli_bypass_login}',
-    'sqli_medium':   'CASA{mama_sqli_burp_medium}',
-    'xss_reflected': 'CASA{papa_xss_reflected_cookie}',
-    'xss_stored':    'CASA{ricitos_xss_stored_beef_hook}',
-    'webshell':      'HABITACION{papa_webshell_rce}',
-    'metasploit':    'HABITACION{mama_metasploit_exploit}',
-    'privesc':       'HABITACION{osito_privesc_root}',
-    'stego':         'HABITACION{ricitos_steghide_final}',
+    'nmap':          'PIEZA{osito_nmap_hosts_activos}',
+    'dork':          'PIEZA{mama_dork_archivo_expuesto}',
+    'dirb':          'PIEZA{papa_dirb_ruta_oculta}',
+    'wireshark':     'PIEZA{ricitos_wireshark_credenciales}',
+    'sqli_login':    'PIEZA{osito_sqli_bypass_login}',
+    'sqli_medium':   'PIEZA{mama_sqli_burp_medium}',
+    'xss_reflected': 'PIEZA{papa_xss_reflected_cookie}',
+    'xss_stored':    'PIEZA{ricitos_xss_stored_beef_hook}',
+    'webshell':      'PIEZA{papa_webshell_rce}',
+    'metasploit':    'PIEZA{mama_metasploit_exploit}',
+    'privesc':       'PIEZA{osito_privesc_root}',
+    'stego':         'PIEZA{ricitos_steghide_final}',
 }
 
 # ── Archivos de flags leídos vía RCE / sistema ─────────
@@ -207,7 +207,7 @@ else:
     with open(img_path, 'ab') as fh:
         fh.write(b'\n# ' + FLAGS['stego'].encode() + b'\n')
     print("[!] steghide no encontrado. Flag añadida al final del PNG.")
-    print("    Alternativa: strings cuadro_del_pasillo.png | grep HABITACION")
+    print("    Alternativa: strings cuadro_del_pasillo.png | grep PIEZA")
 
 print("\n" + "=" * 52)
 print("  RicitosFlow CTF - Setup completado")

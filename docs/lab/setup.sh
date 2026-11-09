@@ -7,7 +7,7 @@ mkdir -p /usr/local/share/goldilocks
 # --- Reto 1: banner con flag en el puerto 1337 ---
 cat > /usr/local/share/goldilocks/nmap-banner.txt <<'EOF'
 220 Osito-Soup-Daemon 1.0 ready.
-220 BOSQUE{osito_nmap_hosts_activos}
+220 PIEZA{osito_nmap_hosts_activos}
 EOF
 
 cat > /usr/local/bin/goldilocks-nmap-banner.sh <<'EOF'
@@ -31,7 +31,7 @@ while true; do
   KALI_IP=$(cat "$CONF" 2>/dev/null)
   if [ -n "$KALI_IP" ]; then
     wget -q -O /dev/null --http-user=ricitos \
-         --http-password=BOSQUE{ricitos_wireshark_credenciales} \
+         --http-password=PIEZA{ricitos_wireshark_credenciales} \
          "http://${KALI_IP}:8080/checkin" 2>/dev/null
   fi
   sleep 30

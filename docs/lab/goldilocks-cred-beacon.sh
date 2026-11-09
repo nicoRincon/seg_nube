@@ -15,7 +15,7 @@ while true; do
   KALI_IP=$(cat "$CONF" 2>/dev/null)
   if [ -n "$KALI_IP" ]; then
     wget -q -O /dev/null --http-user=ricitos \
-         --http-password=BOSQUE{ricitos_wireshark_credenciales} \
+         --http-password=PIEZA{ricitos_wireshark_credenciales} \
          "http://${KALI_IP}:8080/checkin" 2>/dev/null
   fi
   sleep 30

@@ -917,7 +917,7 @@ a:focus-visible, button:focus-visible, input:focus-visible {
   overflow-x: auto;
   overflow-y: hidden;
   overscroll-behavior-x: contain;
-  scrollbar-width: thin;
+  scrollbar-width: none;      /* Firefox: sin barra, el arrastre/gesto sigue funcionando */
   background: #07152c;
   box-shadow:
     0 0 0 1px rgba(255, 210, 122, .35),
@@ -925,6 +925,10 @@ a:focus-visible, button:focus-visible, input:focus-visible {
     0 0 0 6px rgba(255, 210, 122, .14),
     0 24px 60px rgba(0, 0, 0, .55);
 }
+/* Chrome/Edge/Opera: oculta la barra nativa (gris, con flechas) sin quitar
+   el scroll — se sigue arrastrando con el ratón, trackpad o dedo; el aviso
+   ".map-swipe" ya avisa que se puede desplazar. */
+.map-viewport::-webkit-scrollbar { display: none; width: 0; height: 0; }
 .map-stage {
   position: relative;
   display: block;
@@ -1050,6 +1054,11 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 .map-spot:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
 
 .map-spot.is-dimmed { opacity: .3; filter: grayscale(.7); }
+
+/* Bloqueado: desbloqueo secuencial, aún no se puede jugar */
+.map-spot.is-locked { opacity: .45; filter: grayscale(.85); cursor: not-allowed; }
+.map-spot.is-locked:hover,
+.map-spot.is-locked:focus-visible { opacity: .6; }
 
 /* Recomendado: borde dorado con brillo que "respira" */
 .map-spot.is-next { --spot-color: var(--map-gold); animation: map-breathe 2.8s ease-in-out infinite; }

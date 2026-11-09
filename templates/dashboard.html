@@ -100,18 +100,22 @@
           {% for ch in CHALLENGES if ch.id in MAP_SPOTS %}
             {% set spot = MAP_SPOTS[ch.id] %}
             {% set solved = ch.id in g_solved %}
+            {% set unlocked = solved or challenge_unlocked(ch.id) %}
+            {% set prev_ch, _ = challenge_nav(ch.id) %}
+            {% set state = 'solved' if solved else ('next' if ch.id == ns.next_id else ('pending' if unlocked else 'locked')) %}
             <li class="map-spot-item" style="--x:{{ spot.x }}%; --y:{{ spot.y }}%">
-              <a href="{{ url_for(ch.endpoint) }}"
-                 class="map-spot phase-{{ ch.phase }} {{ 'is-solved' if solved else 'is-pending' }} {{ 'is-next' if ch.id == ns.next_id }} {{ 'is-edge-right' if spot.x > 78 }}"
+              <a href="{{ url_for(ch.endpoint) if unlocked else '#' }}"
+                 class="map-spot phase-{{ ch.phase }} {{ 'is-solved' if solved else 'is-pending' }} {{ 'is-next' if ch.id == ns.next_id }} {{ 'is-locked' if not unlocked }} {{ 'is-edge-right' if spot.x > 78 }}"
                  data-name="{{ ch.name }}"
                  data-category="{{ ch.category }}"
                  data-pts="{{ ch.pts }}"
                  data-place="{{ spot.place }}"
                  data-phase="Fase {{ ch.phase }} · {{ phase_names.get(ch.phase, '') }}"
-                 data-brief="{{ ch.brief|striptags|truncate(120) }}"
-                 data-state="{{ 'solved' if solved else ('next' if ch.id == ns.next_id else 'pending') }}"
-                 aria-label="{{ ch.name }}, {{ spot.place }}. {{ ch.pts }} puntos. {{ 'Huella encontrada' if solved else 'Pendiente' }}{{ '. Recomendado' if ch.id == ns.next_id }}">
-                {# Pendiente: placa con candado, número, nombre y categoría.
+                 data-brief="{{ ('Resuelve «' ~ prev_ch.name ~ '» primero para desbloquear este reto.') if not unlocked else ch.brief|striptags|truncate(120) }}"
+                 data-state="{{ state }}"
+                 aria-disabled="{{ 'true' if not unlocked else 'false' }}"
+                 aria-label="{{ ch.name }}, {{ spot.place }}. {{ ch.pts }} puntos. {{ 'Huella encontrada' if solved else ('Bloqueado' if not unlocked else 'Pendiente') }}{{ '. Recomendado' if ch.id == ns.next_id }}">
+                {# Pendiente/bloqueado: placa con candado, número, nombre y categoría.
                    Superado: insignia verde (el nombre aparece al pasar el ratón o con el foco). #}
                 <span class="map-spot-pin" aria-hidden="true">
                   <img src="{{ url_for('static', filename='img/icons/' ~ ('map-check.svg' if solved else 'map-lock.svg')) }}" alt="" width="40" height="40">
@@ -176,7 +180,8 @@
   var stateText = {
     solved: '✓ Huella encontrada',
     next: '✧ Recomendado: tu siguiente parada',
-    pending: '○ Por descubrir'
+    pending: '○ Por descubrir',
+    locked: '🔒 Bloqueado'
   };
   var current = null;
 
@@ -212,12 +217,18 @@
     q('.map-card-pts').textContent = d.pts + ' PTS';
     q('.map-card-state').textContent = stateText[d.state] || '';
     card.dataset.state = d.state;
-    q('.map-card-go').href = spot.href;
-    q('.map-card-go').textContent = d.state === 'solved' ? 'Volver al desafío →' : 'Entrar al desafío →';
+    var go = q('.map-card-go');
+    if (d.state === 'locked') {
+      go.hidden = true;
+    } else {
+      go.hidden = false;
+      go.href = spot.href;
+      go.textContent = d.state === 'solved' ? 'Volver al desafío →' : 'Entrar al desafío →';
+    }
     card.hidden = false;
     place(spot);
     spot.setAttribute('aria-expanded', 'true');
-    q('.map-card-go').focus({ preventScroll: true });
+    (go.hidden ? q('.map-card-close') : go).focus({ preventScroll: true });
   }
 
   function close(restoreFocus) {

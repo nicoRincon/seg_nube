@@ -489,7 +489,7 @@ Estos parámetros deben poder **documentarse sin publicar valores reales**, con 
 |---|---|---|
 | Dirección y puerto de escucha | Fijos en `app.py` (`0.0.0.0:5000`) | Valor de ejemplo y uso recomendado por entorno |
 | Clave de sesión de Flask | Fija en `app.py` | Marcador de ejemplo; valor real local |
-| Banderas | Fijas en `app.py` y duplicadas en `setup_db.py` | Marcador `CTF{…}`; una sola fuente local |
+| Banderas | Fijas en `app.py` y duplicadas en `setup_db.py` | Marcador `PIEZA{…}` / `PIEZA{…}` / `PIEZA{…}` según la fase; una sola fuente local |
 | Contraseñas de los usuarios del laboratorio | En `setup_db.py`, `INSTALL.md` y `SOLUCIONARIO.md` | Marcadores en la documentación compartida |
 | Frase de paso de `steghide` | En `setup_db.py` (y visible a propósito en `stego.html`) | Marcador en la documentación compartida |
 | Ruta de la base de datos, `uploads/` y `flags/` | Relativas al proyecto | Documentar las rutas de cada entorno |

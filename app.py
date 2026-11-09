@@ -74,22 +74,26 @@ LAB_TARGET_IP = os.environ.get('GOLDILOCKS_LAB_IP', '192.168.56.115')
 # Flags del CTF — 12 banderas, 3 fases
 # ──────────────────────────────────────────────────────
 FLAGS = {
-    # Fase 1 · El Bosque · Reconocimiento
-    'nmap':          'CTF{osito_bosque_nmap_hosts_activos}',
-    'dork':          'CTF{mama_bosque_dork_archivo_expuesto}',
-    'dirb':          'CTF{papa_bosque_dirb_ruta_oculta}',
-    'wireshark':     'CTF{ricitos_bosque_wireshark_credenciales}',
-    # Fase 2 · La Casa · Explotación Web
-    'sqli_login':    'CTF{osito_casa_sqli_bypass_login}',
-    'sqli_medium':   'CTF{mama_casa_sqli_burp_medium}',
-    'xss_reflected': 'CTF{papa_casa_xss_reflected_cookie}',
-    'xss_stored':    'CTF{ricitos_casa_xss_stored_beef_hook}',
-    # Fase 3 · Las Habitaciones · Escalada
-    'webshell':      'CTF{papa_habitacion_webshell_rce}',
-    'metasploit':    'CTF{mama_habitacion_metasploit_exploit}',
-    'privesc':       'CTF{osito_habitacion_privesc_root}',
-    'stego':         'CTF{ricitos_habitacion_steghide_final}',
+    # Fase 1 · El Bosque · Reconocimiento — formato PIEZA{...}
+    'nmap':          'PIEZA{osito_nmap_hosts_activos}',
+    'dork':          'PIEZA{mama_dork_archivo_expuesto}',
+    'dirb':          'PIEZA{papa_dirb_ruta_oculta}',
+    'wireshark':     'PIEZA{ricitos_wireshark_credenciales}',
+    # Fase 2 · La Casa · Explotación Web — formato PIEZA{...}
+    'sqli_login':    'PIEZA{osito_sqli_bypass_login}',
+    'sqli_medium':   'PIEZA{mama_sqli_burp_medium}',
+    'xss_reflected': 'PIEZA{papa_xss_reflected_cookie}',
+    'xss_stored':    'PIEZA{ricitos_xss_stored_beef_hook}',
+    # Fase 3 · Las Habitaciones · Escalada — formato PIEZA{...}
+    'webshell':      'PIEZA{papa_webshell_rce}',
+    'metasploit':    'PIEZA{mama_metasploit_exploit}',
+    'privesc':       'PIEZA{osito_privesc_root}',
+    'stego':         'PIEZA{ricitos_steghide_final}',
 }
+
+# Prefijo de formato de bandera por fase (usado en la UI para mostrar el
+# formato correcto en cada reto en vez de un CTF{...} genérico).
+FLAG_PREFIX = {1: 'PIEZA', 2: 'PIEZA', 3: 'PIEZA'}
 
 # 75 pts × 12 = 900
 CHALLENGE_PTS = {k: 75 for k in FLAGS}
@@ -243,7 +247,7 @@ CHALLENGES_META = [
          'contraseña.',
          'La contraseña es el nombre de la protagonista en minúsculas y sin tildes: '
          '<code>ricitos</code>. Si no tienes steghide: '
-         '<code>strings cuadro_del_pasillo.png | grep CTF</code>.',
+         '<code>strings cuadro_del_pasillo.png | grep PIEZA</code>.',
      ]},
 ]
 
@@ -398,6 +402,7 @@ def inject_game_state():
         hint_cost_min = HINT_PENALTY_S // 60,
         hint_cost_pts = HINT_PENALTY_P,
         lab_ip        = LAB_TARGET_IP,
+        FLAG_PREFIX   = FLAG_PREFIX,
     )
 
 # ──────────────────────────────────────────────────────
@@ -433,6 +438,36 @@ def challenge_nav(cid):
     return prev_ch, next_ch
 
 app.jinja_env.globals['challenge_nav'] = challenge_nav
+app.jinja_env.globals['FLAG_PREFIX'] = FLAG_PREFIX
+
+# ──────────────────────────────────────────────────────
+# Desbloqueo secuencial de retos
+# El reto N solo se puede jugar si el reto N-1 (según el orden de
+# CHALLENGES_META) ya está resuelto. El primero siempre está abierto.
+# ──────────────────────────────────────────────────────
+_CHALLENGE_IDS       = [c['id'] for c in CHALLENGES_META]
+_CHALLENGE_ENDPOINTS = {c['endpoint']: c['id'] for c in CHALLENGES_META}
+
+def challenge_unlocked(cid, solved=None):
+    if solved is None:
+        solved = session.get('solved', [])
+    if cid not in _CHALLENGE_IDS:
+        return True
+    i = _CHALLENGE_IDS.index(cid)
+    return i == 0 or _CHALLENGE_IDS[i - 1] in solved
+
+app.jinja_env.globals['challenge_unlocked'] = challenge_unlocked
+
+@app.before_request
+def enforce_sequential_unlock():
+    cid = _CHALLENGE_ENDPOINTS.get(request.endpoint)
+    if cid is None or not game_started():
+        return  # no es un reto, o play_required ya se encarga de la sesión
+    if not challenge_unlocked(cid):
+        prev_id = _CHALLENGE_IDS[_CHALLENGE_IDS.index(cid) - 1]
+        prev_name = CH_BY_ID.get(prev_id, {}).get('name', 'el reto anterior')
+        flash(f'Todavía no has desbloqueado este reto — resuelve primero "{prev_name}".', 'warning')
+        return redirect(url_for('dashboard'))
 
 # ──────────────────────────────────────────────────────
 # Acceso de participantes (participants.db)
@@ -640,6 +675,10 @@ def submit_flag():
 
     if not ch:
         flash('Desafío desconocido.', 'danger')
+        return redirect(url_for('dashboard'))
+
+    if not challenge_unlocked(cid):
+        flash('Todavía no has desbloqueado ese reto.', 'warning')
         return redirect(url_for('dashboard'))
 
     solved = session.get('solved', [])

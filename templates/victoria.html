@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block title %}¡Ricitos escapó! — RicitosFlow{% endblock %}
+
+{% block content %}
+{#
+  ─────────────── Pantalla de victoria final (SOLO PLANTILLA VISUAL) ───────────────
+  Escena: static/img/victoria_final.png. Ricitos escapa por el bosque mientras
+  los tres osos la miran enojados desde la casa. Los textos y el botón son HTML
+  superpuestos a los paneles de la ilustración (sección VICTORIA FINAL de
+  style.css). En móvil, la ilustración queda como cabecera y los paneles debajo.
+
+  ESTA PLANTILLA NO TIENE RUTA TODAVÍA. No se debe habilitar ninguna URL que la
+  muestre hasta que exista el rompecabezas final y su validación en el servidor
+  (ver el comentario "VICTORIA FINAL" en app.py). La futura ruta debe pasar:
+    pieces_owned, pieces_total  → viñetas recuperadas (desde puzzle_pieces)
+  Antes de mostrarla, el servidor debe marcar la partida como ganada y detener
+  el temporizador, para que «Finalizar aventura» abra /scoreboard y no /lose
+  (requisito pendiente detallado en app.py, "VICTORIA FINAL").
+
+  Sonido: data-rf-victory hace que rf-audio.js reproduzca victoria_sonic.mp3
+  una sola vez por participante (respeta la preferencia de sonido).
+
+  Botón: la ilustración actual dibuja el botón vacío, así que el texto HTML se
+  ve encima (clase vf-finish--labeled). Si una versión futura de la imagen ya
+  trae «Finalizar Aventura» dibujado, quitar esa clase para no duplicarlo: el
+  texto quedará solo para lectores de pantalla.
+#}
+<section class="vf-scene" aria-labelledby="vf-title" data-rf-victory="{{ g_username }}">
+  <div class="vf-stage">
+    <div class="vf-art">
+      <img class="vf-bg" src="{{ url_for('static', filename='img/victoria_final.png') }}"
+           alt="Ricitos de Oro escapa corriendo por el sendero del bosque bajo la luna mientras los tres osos la observan enojados desde la puerta de su casa."
+           width="1711" height="919">
+    </div>
+
+    {# Panel superior: mensaje de victoria #}
+    <div class="vf-panel vf-panel--top">
+      <p class="vf-kicker">Fin del cuento</p>
+      <h1 class="vf-title" id="vf-title">¡Ricitos escapó del bosque!</h1>
+      <p class="vf-lead">Recuperaste las doce viñetas y armaste el cuento completo antes de que los osos te alcanzaran.</p>
+    </div>
+
+    {# Panel central: resumen de la partida #}
+    <div class="vf-panel vf-panel--stats">
+      <dl class="vf-stats">
+        <div><dt>Explorador</dt><dd>{{ g_username }}</dd></div>
+        <div><dt>Puntos</dt><dd>{{ g_score }} / {{ g_total_pts }}</dd></div>
+        <div><dt>Huellas</dt><dd>{{ g_solved_n }} / {{ g_total_ch }}</dd></div>
+        <div><dt>Viñetas</dt><dd>{{ pieces_owned|default('—') }} / {{ pieces_total|default(g_total_ch) }}</dd></div>
+        <div><dt>Tiempo restante</dt><dd>{{ '%02d:%02d'|format(g_remaining // 60, g_remaining % 60) }}</dd></div>
+      </dl>
+    </div>
+
+    {# Botón real sobre el botón dibujado (escritorio). En móvil la ilustración es
+       demasiado pequeña para pulsarlo: pasa debajo de los paneles como botón normal.
+       Lleva al diario (ruta 'scoreboard'): conserva la sesión y el progreso. #}
+    <form class="vf-finish vf-finish--labeled" method="get" action="{{ url_for('scoreboard') }}">
+      <button class="vf-finish-btn" type="submit">
+        <span class="vf-finish-label">Finalizar aventura</span>
+      </button>
+    </form>
+  </div>
+</section>
+{% endblock %}

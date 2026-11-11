@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% from '_macros.html' import challenge_header, briefing, hints, flag_form, detect_bar, nav_buttons %}
+{% from '_reward_card.html' import reward_slot %}
 {% block title %}Papá Oso Despierta — RicitosFlow{% endblock %}
 
 {% block content %}
@@ -69,4 +70,6 @@ def run():
 
   {{ nav_buttons(ch) }}
 </div>
+{# Recompensa: frente genérico (este reto no usa el libro) #}
+{{ reward_slot(ch.id) }}
 {% endblock %}

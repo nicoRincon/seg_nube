@@ -8,7 +8,20 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-<body>
+{#- Escena sonora (static/js/rf-audio.js): música de acceso, música del bosque
+    (mapa y diario), temporizador de los desafíos o silencio. -#}
+{%- if request.endpoint in ('index', 'login', 'register') -%}
+  {%- set rf_scene = 'login' -%}
+{%- elif request.endpoint in ('dashboard', 'scoreboard') -%}
+  {%- set rf_scene = 'forest' -%}
+{%- elif ch is defined -%}
+  {%- set rf_scene = 'challenge' -%}
+{%- elif request.endpoint == 'lose' -%}
+  {%- set rf_scene = 'lose' -%}
+{%- else -%}
+  {%- set rf_scene = '' -%}
+{%- endif %}
+<body data-rf-scene="{{ rf_scene }}"{% if ch is defined and ch.id in g_solved %} data-rf-solved="1"{% endif %}>
 
 {% if g_started %}
 {# HUD ilustrado: madera + pergamino. #timer y #score los usa el script del final. #}
@@ -16,7 +29,7 @@
 <header class="gl-hud">
   <a href="{{ url_for('dashboard') }}" class="gl-brand" aria-label="RicitosFlow: volver al mapa">
     <img class="gl-brand-logo" src="{{ url_for('static', filename='img/ricitosflow_logo.webp') }}"
-         alt="RicitosFlow" width="986" height="399" decoding="async">
+         alt="RicitosFlow" width="986" height="400" decoding="async">
   </a>
 
   <div class="gl-scroll">
@@ -89,6 +102,15 @@
           <a href="{{ url_for('set_level', level='medium') }}" class="{{ 'on-medium' if g_level=='medium' }}">medium</a>
           <a href="{{ url_for('set_level', level='high') }}"   class="{{ 'on-high'   if g_level=='high' }}">high</a>
         </span>
+        <div class="gl-panel-title">🔊 Sonido</div>
+        <button type="button" class="gl-sound" data-sound-toggle aria-pressed="true">
+          <svg class="gl-sound-ico" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+            <path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor"/>
+            <path class="gl-sound-on" d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <path class="gl-sound-off" d="M16 9.5l5 5M21 9.5l-5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+          <span data-sound-label>Efectos activados</span>
+        </button>
         <div class="gl-panel-title">🔄 Partida</div>
         <a class="gl-panel-link" href="{{ url_for('reset') }}" onclick="return confirm('¿Reiniciar el escenario? Se pierde el progreso y el cronómetro vuelve a 120:00.')">Reiniciar escenario</a>
       </nav>
@@ -121,12 +143,27 @@
   </p>
 </footer>
 
+<script src="{{ url_for('static', filename='js/sound-pref.js') }}"></script>
+<script src="{{ url_for('static', filename='js/rf-audio.js') }}" data-base="{{ url_for('static', filename='audio/') }}"></script>
+{% if ch is defined %}<script src="{{ url_for('static', filename='js/hint-popup.js') }}"></script>{% endif %}
+{#- Alerta de respuesta incorrecta: solo si el servidor acaba de rechazar la bandera de este reto -#}
+{% if ch is defined and take_wrong(ch.id) %}{% include '_wrong_alert.html' %}{% endif %}
 {% if g_started %}
 <script>
 (function () {
   var el = document.getElementById('timer');
   var scoreEl = document.getElementById('score');
   var remaining = parseInt(el.dataset.remaining, 10) || 0;
+  var loseUrl = "{{ url_for('lose') }}";
+  var onLose = {{ 'true' if request.endpoint == 'lose' else 'false' }};
+  var audio = window.RFAudio;
+
+  // Tiempo agotado: el tic-tac se detiene y suena el rugido antes de la
+  // derrota (rf-audio.js). Sin sonido, la derrota es inmediata, como siempre.
+  function timeUp() {
+    if (onLose) return;                 // ya estamos en la pantalla de derrota
+    if (audio) audio.defeat(loseUrl); else window.location = loseUrl;
+  }
 
   function fmt(s) {
     var m = Math.floor(s / 60), r = s % 60;
@@ -136,23 +173,28 @@
     el.textContent = fmt(remaining);
     el.classList.toggle('warn', remaining <= 600 && remaining > 120);
     el.classList.toggle('crit', remaining <= 120);
+    if (audio && !onLose) audio.timer(remaining);
   }
   paint();
 
   var tick = setInterval(function () {
     remaining = Math.max(0, remaining - 1);
     paint();
-    if (remaining === 0) { clearInterval(tick); window.location = "{{ url_for('lose') }}"; }
+    if (remaining === 0) { clearInterval(tick); clearInterval(sync); timeUp(); }
   }, 1000);
 
   // resync with server every 20s (covers hint penalties, other tabs)
-  setInterval(function () {
+  var sync = setInterval(function () {
     fetch("{{ url_for('state_json') }}", { cache: 'no-store' })
       .then(function (r) { return r.json(); })
       .then(function (d) {
+        if (onLose) return;
         remaining = d.remaining; paint();
         if (scoreEl) scoreEl.textContent = d.score;
-        if (d.over) window.location = "{{ url_for('lose') }}";
+        if (d.over) {
+          clearInterval(tick); clearInterval(sync);
+          if (d.remaining <= 0) timeUp(); else window.location = loseUrl;   // detección: sin cambios
+        }
       }).catch(function () {});
   }, 20000);
 })();

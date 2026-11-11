@@ -9,6 +9,14 @@
   cabecera y el formulario en un bloque debajo.
 #}
 <section class="login-scene" aria-labelledby="login-title">
+  {# Música de ambientación: misma preferencia que Ajustes → Sonido (sound-pref.js) #}
+  <button type="button" class="rf-sound-fab" data-sound-toggle aria-pressed="true">
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+      <path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor"/>
+      <path class="gl-sound-on" d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      <path class="gl-sound-off" d="M16 9.5l5 5M21 9.5l-5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    </svg>
+  </button>
   <div class="login-stage">
     <div class="login-art">
       <img class="login-bg" src="{{ url_for('static', filename='img/login_bosque.png') }}"
@@ -21,7 +29,7 @@
       <p class="login-eyebrow">Una aventura de ciberseguridad</p>
       <h1 class="login-title" id="login-title">
         <img class="login-logo" src="{{ url_for('static', filename='img/ricitosflow_logo.webp') }}"
-             alt="RicitosFlow" width="986" height="399" fetchpriority="high">
+             alt="RicitosFlow" width="986" height="400" fetchpriority="high">
       </h1>
       {# Pestañas: funcionan como enlaces sin JavaScript (?tab=…) y sin recargar con él #}
       <div class="login-tabs" role="tablist" aria-label="Acceso al juego">

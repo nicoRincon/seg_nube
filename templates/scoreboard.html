@@ -1,66 +1,280 @@
 {% extends 'base.html' %}
-{% block title %}Marcador — RicitosFlow{% endblock %}
+{% block title %}Diario de explorador — RicitosFlow{% endblock %}
 
 {% block content %}
-<div class="wrap narrow">
+{#
+  ─────────────── Diario de explorador (ruta /scoreboard) ───────────────
+  Escenario: static/img/diario_mapa_explorador.png (1672×941). Todo el texto,
+  los números y las viñetas van encima en HTML/CSS, colocados en % de la
+  imagen (sección DIARIO de style.css). En móvil los paneles y el pergamino se
+  apilan y las 12 huellas pasan a una cuadrícula.
 
-  <div class="eyebrow">Marcador</div>
-  <h1 class="page">🏆 Los Tres Osos</h1>
-  <p class="lead">¿Quién se comió toda la sopa y completó el álbum de huellas?</p>
+  Datos (sin valores de prueba):
+    album         → las 12 viñetas en orden narrativo; la k-ésima pieza del
+                    jugador autenticado revela la viñeta k (owned_sequence en
+                    app.py) y `ch` es el desafío que la reveló
+    pieces_owned  → viñetas reveladas
+    explorer      → score_owner(): la cuenta autenticada, no la cookie de sesión
+    board         → clasificación global (misma consulta de siempre)
+    g_score, g_solved, g_solved_n, g_total_ch, g_total_pts → contexto global
 
-  <div class="stats">
-    <div class="stat"><div class="v">{{ g_score }}</div><div class="k">Mis puntos</div></div>
-    <div class="stat"><div class="v">{{ g_solved_n }}</div><div class="k">Huellas encontradas</div></div>
-    <div class="stat"><div class="v">{{ g_total_ch }}</div><div class="k">Totales</div></div>
-  </div>
+  Las viñetas no reveladas no incluyen la ruta de su imagen.
+#}
+{#- Huecos del pergamino en píxeles de la imagen: caja x1, y1, x2, y2 de la silueta
+    (static/img/diario_huecos/hueco_NN.png, extraída del contorno crema de la
+    propia ilustración) y centro del número dibujado -#}
+{%- set SLOTS = [
+  (341, 199, 570, 411, 400, 250), (561, 185, 784, 396, 604, 224),
+  (768, 203, 979, 413, 810, 238), (970, 199, 1190, 407, 1012, 235),
+  (352, 395, 586, 622, 420, 430), (564, 384, 764, 621, 628, 420),
+  (738, 402, 953, 619, 792, 435), (934, 391, 1184, 609, 993, 428),
+  (276, 606, 510, 819, 330, 652), (500, 595, 732, 826, 552, 632),
+  (723, 601, 946, 835, 773, 638), (935, 592, 1172, 814, 979, 635)] -%}
+{%- set next_ch = CHALLENGES | rejectattr('id', 'in', g_solved) | first -%}
+{%- set ns = namespace(rank=0) -%}
+{%- for e in board %}{% if e.username == explorer %}{% set ns.rank = loop.index %}{% endif %}{% endfor -%}
 
-  <div class="card">
-    <div class="card-title">📋 Álbum de huellas</div>
-    <div class="tbl-wrap">
-      <table>
-        <thead><tr><th>#</th><th>Fase</th><th>Desafío</th><th>Categoría</th><th>Pts</th><th>Estado</th></tr></thead>
-        <tbody>
+<section class="dx" aria-labelledby="dx-title">
+  <div class="dx-stage">
+    <img class="dx-bg" src="{{ url_for('static', filename='img/diario_mapa_explorador.png') }}"
+         alt="" width="1672" height="941" decoding="async">
+
+    <h1 class="dx-title" id="dx-title">Diario de explorador</h1>
+
+    {# ── Panel izquierdo: el jugador y su progreso general ── #}
+    <aside class="dx-panel dx-player" aria-label="Explorador">
+      <p class="dx-kicker">Explorador/a</p>
+      <h2 class="dx-name">{{ explorer }}</h2>
+
+      <div class="dx-progress">
+        <p class="dx-progress-txt"><b>{{ g_solved_n }}</b> de {{ g_total_ch }} huellas</p>
+        <div class="dx-bar" role="progressbar" aria-label="Huellas encontradas"
+             aria-valuemin="0" aria-valuemax="{{ g_total_ch }}" aria-valuenow="{{ g_solved_n }}">
+          <span style="width: {{ (g_solved_n / g_total_ch * 100) | round(1) if g_total_ch else 0 }}%"></span>
+        </div>
+      </div>
+
+      <dl class="dx-facts">
+        <div><dt>Puntos</dt><dd>{{ g_score }}<small> / {{ g_total_pts }}</small></dd></div>
+        <div><dt>Viñetas</dt><dd>{{ pieces_owned }}<small> / {{ album | length }}</small></dd></div>
+      </dl>
+
+      {% if next_ch %}
+        <p class="dx-next">
+          <span class="dx-next-k">Siguiente huella</span>
+          {%- set phase_txt -%}Fase {{ next_ch.phase }}{% for p in PHASES if p.id == next_ch.phase %} · {{ p.name }}{% endfor %}{%- endset %}
+          <a href="{{ url_for(next_ch.endpoint) }}" title="{{ phase_txt }}">{{ next_ch.icon }} {{ next_ch.name }}</a>
+          <small>{{ phase_txt }}</small>
+        </p>
+      {% else %}
+        <p class="dx-next dx-next--done">¡Encontraste todas las huellas del bosque!</p>
+      {% endif %}
+    </aside>
+
+    {# ── Libros ilustrados (abajo a la izquierda): seguir la aventura ── #}
+    {% if next_ch %}
+      <a class="dx-books" href="{{ url_for(next_ch.endpoint) }}">
+        <span class="dx-books-art" aria-hidden="true"></span>
+        <span class="dx-books-label">Continuar la aventura</span>
+      </a>
+    {% else %}
+      <a class="dx-books" href="{{ url_for('dashboard') }}">
+        <span class="dx-books-art" aria-hidden="true"></span>
+        <span class="dx-books-label">Volver al mapa</span>
+      </a>
+    {% endif %}
+
+    {# ── Señal de madera con la huella: volver al mapa ── #}
+    <a class="dx-sign" href="{{ url_for('dashboard') }}" title="Volver al mapa del bosque">
+      <span class="dx-sign-label">Mapa</span>
+    </a>
+
+    {# ── Pergamino central: las 12 huellas (viñetas de la historieta) ── #}
+    <h2 class="dx-album-title">Álbum de huellas</h2>
+    <ol class="dx-album" aria-label="Álbum de huellas: {{ pieces_owned }} de {{ album | length }} viñetas reveladas">
+      {#- Cada viñeta toma la silueta de su hueco (máscara). Las pendientes solo
+          llevan su versión gris de 360 px (historieta/gris/); la ruta de la
+          ilustración original aparece únicamente en las ya reveladas. -#}
+      {% for p in album %}
+        {%- set s = SLOTS[loop.index0] -%}
+        {%- set gray = url_for('static', filename='img/historieta/gris/' ~ p.file ~ '_gris.webp') -%}
+        {%- set is_next = not p.owned and p.n == pieces_owned + 1 -%}
+        <li class="dx-slot {{ 'is-open' if p.owned else 'is-locked' }}{{ ' is-next' if is_next }}" data-n="{{ p.n }}"
+            style="--x:{{ '%.3f' % (s[0] / 16.72) }}%;--y:{{ '%.3f' % (s[1] / 9.41) }}%;--w:{{ '%.3f' % ((s[2] - s[0]) / 16.72) }}%;--h:{{ '%.3f' % ((s[3] - s[1]) / 9.41) }}%;--bx:{{ '%.2f' % ((s[4] - s[0]) / (s[2] - s[0]) * 100) }}%;--by:{{ '%.2f' % ((s[5] - s[1]) / (s[3] - s[1]) * 100) }}%;--mask:url('{{ url_for('static', filename='img/diario_huecos/hueco_%02d.png' % p.n) }}')">
+          <span class="dx-num" aria-hidden="true">{{ p.n }}</span>
+          {% if p.owned %}
+            {%- set src = url_for('static', filename='img/historieta/' ~ p.file ~ '.webp') -%}
+            <a class="dx-tile" href="{{ src }}" data-dx-piece
+               data-n="{{ p.n }}" data-title="{{ p.title }}" data-src="{{ src }}" data-ch="{{ p.ch.name }}"
+               aria-label="Viñeta {{ p.n }}: {{ p.title }}. Ver en grande">
+              <img class="dx-gray" src="{{ gray }}" alt="" width="360" height="360" decoding="async">
+              <img class="dx-color" src="{{ src }}" alt="" width="1254" height="1254" loading="lazy" decoding="async">
+            </a>
+          {% else %}
+            <div class="dx-tile" role="img"
+                 aria-label="Viñeta {{ p.n }} pendiente: {{ 'se revela con tu próxima huella' if is_next else 'aún sin revelar' }}"
+                 title="{{ 'Se revela con tu próxima huella' if is_next else 'Viñeta pendiente' }}">
+              <img class="dx-gray" src="{{ gray }}" alt="" width="360" height="360" loading="lazy" decoding="async">
+            </div>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ol>
+
+    {# ── Panel superior derecho: estado del álbum y clasificación ── #}
+    <section class="dx-panel dx-adventure" aria-labelledby="dx-adv-title">
+      <h2 class="dx-plaque dx-plaque--top" id="dx-adv-title">La aventura</h2>
+      <div class="dx-adv-body">
+        <p class="dx-adv-album">
+          {% if pieces_owned >= album | length %}
+            ¡Tienes las {{ album | length }} viñetas de la historia!
+          {% else %}
+            <b>{{ pieces_owned }}</b> de {{ album | length }} viñetas reveladas
+            · faltan {{ album | length - pieces_owned }}
+          {% endif %}
+        </p>
+        {% if board %}
+          <p class="dx-adv-k">Clasificación del bosque</p>
+          <ol class="dx-rank">
+            {% for e in board[:3] %}
+              <li class="{{ 'is-me' if e.username == explorer }}">
+                <span class="dx-rank-pos dx-rank-pos--{{ loop.index }}">{{ loop.index }}</span>
+                <span class="dx-rank-name">{{ e.username }}{% if e.username == explorer %} <em>(tú)</em>{% endif %}</span>
+                <span class="dx-rank-pts">{{ e.score }} pts · {{ e.flags }} 🐾</span>
+              </li>
+            {% endfor %}
+            {% if ns.rank > 3 %}
+              {%- set me = board[ns.rank - 1] %}
+              <li class="is-me">
+                <span class="dx-rank-pos">{{ ns.rank }}</span>
+                <span class="dx-rank-name">{{ me.username }} <em>(tú)</em></span>
+                <span class="dx-rank-pts">{{ me.score }} pts · {{ me.flags }} 🐾</span>
+              </li>
+            {% endif %}
+          </ol>
+        {% endif %}
+      </div>
+    </section>
+
+    {# ── Panel inferior derecho: registro de progreso ── #}
+    <section class="dx-panel dx-log" aria-labelledby="dx-log-title">
+      <h2 class="dx-plaque dx-plaque--bottom" id="dx-log-title">Registro</h2>
+      <div class="dx-log-body">
+        <dl class="dx-log-stats">
+          <div><dt>Desafíos</dt><dd>{{ g_solved_n }}/{{ g_total_ch }}</dd></div>
+          <div><dt>Huellas</dt><dd>{{ g_solved_n }}/{{ g_total_ch }}</dd></div>
+          <div><dt>Puntos</dt><dd>{{ g_score }}</dd></div>
+        </dl>
+        <ol class="dx-log-list">
           {% for ch in CHALLENGES %}
-          <tr>
-            <td style="color:var(--text-faint);">{{ loop.index }}</td>
-            <td style="color:var(--{{ 'green' if ch.phase==1 else 'yellow' if ch.phase==2 else 'red' }});">{{ ch.phase }}</td>
-            <td><a href="{{ url_for(ch.endpoint) }}" style="text-decoration:none;">{{ ch.icon }} {{ ch.name }}</a></td>
-            <td><code style="font-size:0.78rem;color:var(--text-dim);">{{ ch.category }}</code></td>
-            <td style="color:var(--yellow);font-family:var(--font-mono);">{{ ch.pts }}</td>
-            <td>
-              {% if ch.id in g_solved %}
-                <span style="color:var(--green-neon);font-family:var(--font-mono);font-size:0.8rem;">✓ ENCONTRADA</span>
-              {% else %}
-                <span style="color:var(--text-faint);font-family:var(--font-mono);font-size:0.8rem;">○ pendiente</span>
-              {% endif %}
-            </td>
-          </tr>
+            {%- set done = ch.id in g_solved %}
+            <li class="{{ 'is-done' if done }}">
+              <span class="dx-log-n">{{ loop.index }}</span>
+              <a href="{{ url_for(ch.endpoint) }}">{{ ch.icon }} {{ ch.name }}</a>
+              <span class="dx-log-pts">{{ ch.pts }}</span>
+              <span class="dx-log-st" title="{{ 'Huella encontrada' if done else 'Pendiente' }}">{{ '✓' if done else '○' }}</span>
+              <span class="dx-sr">{{ 'encontrada' if done else 'pendiente' }}</span>
+            </li>
           {% endfor %}
-        </tbody>
-      </table>
-    </div>
+        </ol>
+      </div>
+    </section>
   </div>
 
-  {% if board %}
-  <div class="card">
-    <div class="card-title">🥇 Clasificación global</div>
-    <div class="tbl-wrap">
-      <table>
-        <thead><tr><th>Pos</th><th>Jugador</th><th>Huellas</th><th>Puntos</th></tr></thead>
-        <tbody>
-          {% for e in board %}
-          <tr {% if e.username == g_username %}style="background:rgba(253,224,71,0.06);"{% endif %}>
-            <td style="font-family:var(--font-mono);color:{% if loop.index==1 %}var(--yellow){% elif loop.index==2 %}#c0c0c0{% elif loop.index==3 %}#cd7f32{% else %}var(--text-faint){% endif %};">{{ loop.index }}</td>
-            <td>{{ e.username }}{% if e.username == g_username %} <span style="color:var(--yellow);font-size:0.75rem;">(tú)</span>{% endif %}</td>
-            <td style="font-family:var(--font-mono);">{{ e.flags }}</td>
-            <td style="font-family:var(--font-mono);color:var(--yellow);">{{ e.score }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+  {# ── Visor de una viñeta: página del cuento con sello ── #}
+  <dialog class="dx-viewer" aria-labelledby="dx-v-title">
+    <div class="dx-v-page">
+      <button type="button" class="dx-v-close" data-dx-close aria-label="Cerrar">×</button>
+      <figure class="dx-v-fig">
+        <div class="dx-v-art"><img class="dx-v-img" src="" alt=""></div>
+        <figcaption>
+          <span class="dx-v-ribbon"></span>
+          <h2 class="dx-v-title" id="dx-v-title"></h2>
+          <p class="dx-v-ch"></p>
+        </figcaption>
+      </figure>
+      <img class="dx-v-seal" src="{{ url_for('static', filename='img/storybook/wax-seal-gold.svg') }}" alt="" width="50" height="56">
+      <div class="dx-v-nav">
+        <button type="button" data-dx-step="-1">‹ Anterior</button>
+        <span class="dx-v-count"></span>
+        <button type="button" data-dx-step="1">Siguiente ›</button>
+      </div>
     </div>
-  </div>
-  {% endif %}
+  </dialog>
+</section>
 
-</div>
+<script>
+(function () {
+  // Viñetas recién reveladas desde la última visita: pasan de gris a color con
+  // un fundido. Solo es memoria visual de este navegador (localStorage); qué
+  // está revelado lo decide siempre el servidor.
+  var key = 'rf-dx-seen:' + {{ explorer | tojson }};
+  var owned = {{ pieces_owned }};
+  var seen = null;
+  try { seen = localStorage.getItem(key); } catch (e) {}
+  seen = seen === null ? null : parseInt(seen, 10);
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (seen !== null && seen < owned && !reduce) {
+    Array.prototype.forEach.call(document.querySelectorAll('.dx-slot.is-open'), function (li) {
+      if (parseInt(li.getAttribute('data-n'), 10) <= seen) return;
+      li.classList.add('is-fresh');                       // color oculto: se ve la versión gris
+      var img = li.querySelector('.dx-color');
+      var go = function () {
+        setTimeout(function () { li.classList.remove('is-fresh'); }, 450);
+      };
+      if (img.complete && img.naturalWidth) go(); else { img.loading = 'eager'; img.addEventListener('load', go, { once: true }); img.addEventListener('error', go, { once: true }); }
+    });
+  }
+  try { localStorage.setItem(key, String(owned)); } catch (e) {}
+})();
+
+(function () {
+  // Visor: solo navega entre las viñetas ya reveladas (las que el servidor pintó)
+  var tiles = Array.prototype.slice.call(document.querySelectorAll('[data-dx-piece]'));
+  var dlg = document.querySelector('.dx-viewer');
+  if (!tiles.length || !dlg || typeof dlg.showModal !== 'function') return;   // sin <dialog>: el enlace abre la imagen
+
+  var img = dlg.querySelector('.dx-v-img');
+  var ribbon = dlg.querySelector('.dx-v-ribbon');
+  var title = dlg.querySelector('.dx-v-title');
+  var chName = dlg.querySelector('.dx-v-ch');
+  var count = dlg.querySelector('.dx-v-count');
+  var steps = dlg.querySelectorAll('[data-dx-step]');
+  var at = 0, opener = null;
+
+  function show(i) {
+    at = (i + tiles.length) % tiles.length;
+    var t = tiles[at].dataset;
+    var n = ('0' + t.n).slice(-2);
+    img.src = t.src;
+    img.alt = 'Viñeta ' + t.n + ' de la historieta: ' + t.title;
+    ribbon.textContent = 'Viñeta ' + n;
+    title.textContent = t.title;
+    chName.textContent = 'Huella del reto «' + t.ch + '»';
+    count.textContent = (at + 1) + ' / ' + tiles.length;
+  }
+  Array.prototype.forEach.call(steps, function (b) {
+    b.hidden = tiles.length < 2;
+    b.addEventListener('click', function () { show(at + parseInt(b.getAttribute('data-dx-step'), 10)); });
+  });
+  count.hidden = tiles.length < 2;
+
+  tiles.forEach(function (a, i) {
+    a.addEventListener('click', function (e) {
+      e.preventDefault();
+      opener = a;
+      show(i);
+      dlg.showModal();
+    });
+  });
+  dlg.querySelector('[data-dx-close]').addEventListener('click', function () { dlg.close(); });
+  dlg.addEventListener('click', function (e) { if (e.target === dlg) dlg.close(); });   // clic fuera de la página
+  dlg.addEventListener('keydown', function (e) {
+    if (tiles.length < 2) return;
+    if (e.key === 'ArrowRight') { e.preventDefault(); show(at + 1); }
+    if (e.key === 'ArrowLeft')  { e.preventDefault(); show(at - 1); }
+  });
+  dlg.addEventListener('close', function () { if (opener) opener.focus(); });
+})();
+</script>
 {% endblock %}

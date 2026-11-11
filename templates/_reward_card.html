@@ -1,0 +1,74 @@
+{#
+  ─────────────── Tarjeta de recompensa (pieza de la historieta) ───────────────
+  Se pinta SOLO cuando el servidor confirma una pieza recién desbloqueada
+  (take_reward en app.py). El navegador no registra nada: solo la muestra.
+
+  reward: {n, file, title, cid, owned, of}
+  front:  ruta en static/ de la ilustración del reto, o None → frente genérico.
+
+  Sin JavaScript queda oculta (atributo hidden) y el jugador ve el flash de siempre.
+
+  Punto de conexión único para las páginas de reto:
+    {{ reward_slot(ch.id, front=art, front_alt=art_alt) }}   (libro: _storybook.html)
+    {{ reward_slot(ch.id) }}                                  (sin libro: frente genérico)
+#}
+{% macro reward_slot(cid, front=None, front_alt='') %}
+  {%- set reward = take_reward(cid) -%}
+  {%- if reward %}{{ reward_card(reward, front=front, front_alt=front_alt) }}{% endif -%}
+{% endmacro %}
+
+{% macro reward_card(reward, front=None, front_alt='') %}
+<div class="rwd" id="rwd" hidden
+     role="dialog" aria-modal="true" aria-labelledby="rwd-title" aria-describedby="rwd-desc"
+     data-piece="{{ reward.n }}" data-sounds='{{ reward_sounds()|tojson }}'>
+  <div class="rwd-backdrop" data-rwd-close></div>
+
+  {# Silenciar / activar efectos (misma preferencia que Ajustes → Sonido) #}
+  <button type="button" class="rwd-sound" data-sound-toggle aria-pressed="true">
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+      <path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor"/>
+      <path class="gl-sound-on" d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      <path class="gl-sound-off" d="M16 9.5l5 5M21 9.5l-5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    </svg>
+  </button>
+
+  <div class="rwd-fly" aria-hidden="true">
+    <div class="rwd-lift">
+      <div class="rwd-card">
+        {# Frente: la ilustración del libro tal cual, o una página decorada genérica #}
+        <div class="rwd-face rwd-front{{ '' if front else ' rwd-front--generic' }}">
+          {% if front %}
+            <img class="rwd-img" src="{{ url_for('static', filename=front) }}" alt="{{ front_alt }}" decoding="async">
+          {% else %}
+            <div class="rwd-generic">
+              <img src="{{ url_for('static', filename='img/icons/book.svg') }}" alt="" width="64" height="64">
+              <span>Una página del cuento</span>
+            </div>
+          {% endif %}
+          <span class="rwd-corner rwd-corner--tl"></span><span class="rwd-corner rwd-corner--tr"></span>
+          <span class="rwd-corner rwd-corner--bl"></span><span class="rwd-corner rwd-corner--br"></span>
+        </div>
+
+        {# Reverso: la viñeta (WebP optimizada; el PNG original queda intacto) #}
+        <div class="rwd-face rwd-back">
+          <img class="rwd-img" src="{{ url_for('static', filename='img/historieta/' ~ reward.file ~ '.webp') }}"
+               alt="Viñeta {{ reward.n }} de la historieta: {{ reward.title }}" decoding="async">
+          <span class="rwd-ribbon">Viñeta {{ '%02d' % reward.n }}</span>
+          <img class="rwd-seal" src="{{ url_for('static', filename='img/storybook/wax-seal-gold.svg') }}" alt="" width="50" height="56">
+          <span class="rwd-corner rwd-corner--tl"></span><span class="rwd-corner rwd-corner--tr"></span>
+          <span class="rwd-corner rwd-corner--bl"></span><span class="rwd-corner rwd-corner--br"></span>
+        </div>
+      </div>
+    </div>
+    <div class="rwd-sparks"></div>
+  </div>
+
+  <div class="rwd-caption">
+    <p class="rwd-kicker">Pieza desbloqueada</p>
+    <h2 id="rwd-title">¡Nueva viñeta desbloqueada!</h2>
+    <p id="rwd-desc">«{{ reward.title }}» se guardó en tu colección · {{ reward.owned }} de {{ reward.of }} piezas</p>
+    <button type="button" class="btn rwd-continue" data-rwd-close>Continuar</button>
+  </div>
+</div>
+<script src="{{ url_for('static', filename='js/reward-card.js') }}" defer></script>
+{% endmacro %}

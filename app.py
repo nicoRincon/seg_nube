@@ -254,6 +254,34 @@ CHALLENGES_META = [
 CH_BY_ID = {c['id']: c for c in CHALLENGES_META}
 
 # ──────────────────────────────────────────────────────
+# Piezas de la historieta (12 viñetas, una por desafío)
+# Asociación temática entre la ilustración del reto y la viñeta, NO por orden
+# de juego: el rompecabezas se arma luego en el minijuego.
+# Imágenes: static/img/historieta/*.webp (copias optimizadas de los PNG
+# originales de static/img/, que se conservan intactos).
+# ──────────────────────────────────────────────────────
+PIECES = {
+    'dork':          {'n': 1,  'file': 'historieta_01_descubrimiento',     'title': 'El descubrimiento'},
+    'dirb':          {'n': 2,  'file': 'historieta_02_la_entrada',         'title': 'La entrada'},
+    'sqli_login':    {'n': 3,  'file': 'historieta_03_las_tres_sopas',     'title': 'Las tres sopas'},
+    'sqli_medium':   {'n': 4,  'file': 'historieta_04_la_sopa_favorita',   'title': 'La sopa favorita'},
+    'xss_stored':    {'n': 5,  'file': 'historieta_05_la_silla',           'title': 'La silla'},
+    'xss_reflected': {'n': 6,  'file': 'historieta_06_la_siesta',          'title': 'La siesta'},
+    'webshell':      {'n': 7,  'file': 'historieta_07_regreso_osos',       'title': 'El regreso de los osos'},
+    'nmap':          {'n': 8,  'file': 'historieta_08_el_descubrimiento',  'title': 'Los osos descubren el desorden'},
+    'metasploit':    {'n': 9,  'file': 'historieta_09_sillas_rotas',       'title': 'Las sillas rotas'},
+    'wireshark':     {'n': 10, 'file': 'historieta_10_rizitos_descubierta', 'title': 'Ricitos descubierta'},
+    'privesc':       {'n': 11, 'file': 'historieta_11_la_huida',           'title': 'La huida'},
+    'stego':         {'n': 12, 'file': 'historieta_12_el_final',           'title': 'El final'},
+}
+assert set(PIECES) == set(FLAGS) and len({p['n'] for p in PIECES.values()}) == len(FLAGS)
+
+# Retos que muestran la animación de recompensa: los 12. El registro de la
+# pieza ocurre en todos; este conjunto solo controla la animación.
+REWARD_ANIMATED = set(PIECES)
+assert REWARD_ANIMATED == set(CH_BY_ID)
+
+# ──────────────────────────────────────────────────────
 # Base de datos
 # ──────────────────────────────────────────────────────
 def get_db():
@@ -291,11 +319,169 @@ def init_progress_db():
                 pts       INTEGER NOT NULL,
                 UNIQUE(username, hint_key)
             )""")
+        # Colección de piezas de la historieta. `placed_at` queda para el
+        # minijuego del rompecabezas (colocar ≠ desbloquear).
+        db.execute("""
+            CREATE TABLE IF NOT EXISTS puzzle_pieces (
+                id          INTEGER PRIMARY KEY AUTOINCREMENT,
+                username    TEXT    NOT NULL,
+                challenge   TEXT    NOT NULL,
+                piece       INTEGER NOT NULL,
+                unlocked_at REAL    NOT NULL,
+                placed_at   REAL,
+                UNIQUE(username, challenge)
+            )""")
+        # Huellas registradas antes de existir la colección: su pieza se entrega
+        # sin animación. Idempotente (INSERT OR IGNORE sobre la clave única).
+        if db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='scores'").fetchone():
+            now = time.time()
+            for username, cid in db.execute(
+                    'SELECT username, challenge FROM scores WHERE username IS NOT NULL').fetchall():
+                if cid in PIECES:
+                    db.execute('INSERT OR IGNORE INTO puzzle_pieces '
+                               '(username, challenge, piece, unlocked_at) VALUES (?,?,?,?)',
+                               (username, cid, PIECES[cid]['n'], now))
         db.commit()
     finally:
         db.close()
 
 init_progress_db()
+
+def unlock_piece(owner, cid):
+    """Registra la pieza del reto para el participante. Devuelve True solo si
+    es nueva. Se llama únicamente desde submit_flag tras validar la bandera en
+    el servidor; ningún endpoint permite registrarla desde el navegador."""
+    piece = PIECES.get(cid)
+    if not piece:
+        return False
+    try:
+        db = sqlite3.connect(DB_PATH)
+        try:
+            cur = db.execute('INSERT OR IGNORE INTO puzzle_pieces '
+                             '(username, challenge, piece, unlocked_at) VALUES (?,?,?,?)',
+                             (owner, cid, piece['n'], time.time()))
+            db.commit()
+            return cur.rowcount == 1
+        finally:
+            db.close()
+    except sqlite3.Error:
+        app.logger.exception('No se pudo guardar la pieza de %s', cid)
+        return False
+
+def piece_owned(owner, cid):
+    row = query_db('SELECT 1 FROM puzzle_pieces WHERE username = ? AND challenge = ?',
+                   (owner, cid), one=True)
+    return row is not None
+
+# ── Álbum en orden narrativo ──
+# La viñeta k (1..12) se revela con la k-ésima pieza que consigue el jugador,
+# sea cual sea el desafío: el orden sale de puzzle_pieces (unlocked_at, id),
+# que ya existe y es de un solo registro por desafío, así que no hay saltos ni
+# duplicados y no hace falta tabla ni migración. La columna `piece` conserva el
+# número temático de PIECES y el álbum no la usa.
+NARRATIVE = sorted(PIECES.values(), key=lambda p: p['n'])
+
+def owned_sequence(owner):
+    """Desafíos del participante en el orden en que consiguió sus piezas."""
+    rows = query_db('SELECT challenge FROM puzzle_pieces WHERE username = ? '
+                    'ORDER BY unlocked_at, id', (owner,))
+    return [r['challenge'] for r in rows if r['challenge'] in PIECES][:len(NARRATIVE)]
+
+def take_reward(cid):
+    """Recompensa pendiente de mostrar en la página de `cid` (un solo uso).
+    El aviso viaja en la sesión, pero se confirma contra la base: una cookie
+    de sesión falsificada no puede inventar piezas. La viñeta mostrada es la
+    que esta pieza reveló en el orden narrativo del álbum."""
+    if session.get('reward_pending') != cid:
+        return None
+    session.pop('reward_pending', None)
+    owner = score_owner()
+    if cid not in REWARD_ANIMATED or not piece_owned(owner, cid):
+        return None
+    seq = owned_sequence(owner)
+    if cid not in seq:
+        return None
+    return dict(NARRATIVE[seq.index(cid)], cid=cid, owned=len(seq), of=len(PIECES))
+
+app.jinja_env.globals['take_reward'] = take_reward
+
+# ── Alerta de respuesta incorrecta ──
+# submit_flag la anota en la sesión SOLO cuando el servidor rechazó la bandera;
+# la página del mismo reto la muestra una vez (base.html → _wrong_alert.html).
+WRONG_ALERT_TTL = 30          # s: un aviso viejo no aparece en otra visita
+
+def take_wrong(cid):
+    w = session.get('wrong_pending')
+    if not isinstance(w, dict):
+        return False
+    fresh = time.time() - float(w.get('t', 0)) < WRONG_ALERT_TTL
+    if w.get('cid') != cid and fresh:
+        return False                      # es de otro reto: se deja para él
+    session.pop('wrong_pending', None)
+    return w.get('cid') == cid and fresh
+
+app.jinja_env.globals['take_wrong'] = take_wrong
+
+# ──────────────────────────────────────────────────────
+# VICTORIA FINAL — punto de conexión pendiente (sin ruta a propósito)
+# La plantilla visual está en templates/victoria.html (victoria_final.png +
+# victoria_sonic.mp3 vía rf-audio.js). NO se registra ninguna ruta hasta que
+# exista el rompecabezas final: una URL sin esa validación permitiría ver la
+# victoria sin haberla ganado.
+# Cuando se implemente, la ruta deberá comprobar EN EL SERVIDOR, con el dueño
+# de score_owner() (no la cookie de sesión):
+#   1. las 12 huellas registradas en `scores`;
+#   2. las 12 piezas en `puzzle_pieces`;
+#   3. el rompecabezas resuelto y validado por su propio endpoint
+#      (la regla concreta la define ese minijuego; aquí no se inventa).
+# Solo entonces: render_template('victoria.html', pieces_owned=…, pieces_total=len(PIECES)).
+#
+# REQUISITO PENDIENTE — partida ganada y acceso al diario
+# (documentado, NO implementado; no requiere cambios de base de datos todavía)
+#   a. Cuando el servidor valide el rompecabezas (punto 3), debe registrar que
+#      la partida está GANADA y DETENER el temporizador: guardar el instante de
+#      la victoria para que time_remaining() y detection_level() dejen de
+#      avanzar a partir de ahí (el tiempo restante mostrado queda congelado).
+#      Ese estado lo fija solo el servidor tras la validación; nunca un
+#      parámetro o campo que envíe el navegador.
+#   b. game_over() debe ser falso para una partida ganada, de modo que
+#      play_required deje entrar a /scoreboard (diario). Así el botón
+#      «Finalizar aventura» de victoria.html lleva al diario sin redirigir a
+#      /lose, aunque haya pasado el tiempo desde que ganó.
+#   c. Se conservan las reglas actuales:
+#        · partida en curso  → acceso normal mientras quede tiempo y la
+#          detección sea < 100;
+#        · partida perdida   → (tiempo agotado o detección ≥ 100 ANTES de
+#          ganar) sigue redirigiendo a /lose; ganar no se puede marcar
+#          después de haber perdido;
+#        · sin partida       → redirige a index.
+#   d. reset_game() debe limpiar el estado de partida ganada junto con el
+#      cronómetro (las huellas guardadas se siguen restaurando como hoy).
+# ──────────────────────────────────────────────────────
+
+# Efectos de sonido de la tarjeta: etapa de reward-card.js → archivo en
+# static/audio/ (sin extensión; .ogg y/o .mp3). Solo se anuncian al navegador
+# los archivos que existen: sin audios, no hay peticiones.
+#   libro_abrir (0,0 s): el reto se completó y la tarjeta sale del libro.
+#   recompensa  (3,4 s): la tarjeta termina de girar y revela la viñeta.
+# magic_suave dura ~3,1 s, así que termina antes de que empiece hadas_medio.
+# Las etapas tarjeta_salida y tarjeta_giro quedan sin sonido.
+REWARD_SOUNDS = {
+    'libro_abrir': 'magic_suave_40-43s',
+    'recompensa':  'hadas_medio_3-5s',
+}
+AUDIO_DIR = os.path.join(BASE_DIR, 'static', 'audio')
+
+def reward_sounds():
+    found = {}
+    for name, base in REWARD_SOUNDS.items():
+        urls = [url_for('static', filename=f'audio/{base}.{ext}')
+                for ext in ('ogg', 'mp3') if os.path.isfile(os.path.join(AUDIO_DIR, f'{base}.{ext}'))]
+        if urls:
+            found[name] = urls
+    return found
+
+app.jinja_env.globals['reward_sounds'] = reward_sounds
 
 def load_progress(username):
     """Huellas registradas y pistas abiertas de un participante, desde la base."""
@@ -702,6 +888,10 @@ def submit_flag():
             return redirect(url_for(ch['endpoint']))
         solved.append(cid)
         session['solved'] = solved
+        # Pieza de la historieta: se registra aquí, en el servidor, tras la
+        # validación de siempre. Solo se anima si la pieza es nueva.
+        if unlock_piece(score_owner(), cid) and cid in REWARD_ANIMATED:
+            session['reward_pending'] = cid
         if is_new:
             flash(f'🐾 ¡Huella correcta! +{pts} PTS.', 'success')
         else:
@@ -709,6 +899,8 @@ def submit_flag():
     else:
         session['detection_hits'] = session.get('detection_hits', 0) + 1
         flash('Huella incorrecta. Los osos husmean más cerca…', 'danger')
+        if not game_over():               # si se perdió, va a /lose sin alerta
+            session['wrong_pending'] = {'cid': cid, 't': time.time()}
 
     if game_over():
         return redirect(url_for('lose'))
@@ -1012,7 +1204,20 @@ def scoreboard():
         board = [{'username': r[0], 'flags': r[1], 'score': r[2]} for r in rows]
     except Exception:
         board = []
-    return render_template('scoreboard.html', board=board)
+
+    # Álbum de la historieta (diario ilustrado): las 12 viñetas en orden
+    # narrativo; la k-ésima pieza del jugador autenticado revela la viñeta k
+    # (owned_sequence). Solo lectura de puzzle_pieces; las piezas las registra
+    # únicamente submit_flag. `ch` = desafío que reveló esa viñeta.
+    owner = score_owner()
+    try:
+        seq = owned_sequence(owner)
+    except sqlite3.Error:
+        seq = []
+    album = [dict(p, owned=k <= len(seq), ch=CH_BY_ID[seq[k - 1]] if k <= len(seq) else None)
+             for k, p in enumerate(NARRATIVE, 1)]
+    return render_template('scoreboard.html', board=board, album=album,
+                           pieces_owned=len(seq), explorer=owner)
 
 # ──────────────────────────────────────────────────────
 if __name__ == '__main__':

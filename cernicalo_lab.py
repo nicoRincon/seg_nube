@@ -20,7 +20,7 @@ import sqlite3
 from pathlib import Path
 
 SCHEMA_VERSION = 1
-FLAG           = 'CTF{cernicalo_guardian_puerta_del_bosque}'
+FLAG           = 'PIEZA{cernicalo_guardian_puerta_del_bosque}'
 MAX_INPUT      = 120          # caracteres por campo
 MAX_ROWS       = 5            # filas que se muestran
 PROGRESS_STEP  = 1000         # instrucciones de SQLite entre comprobaciones

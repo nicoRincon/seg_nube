@@ -1,0 +1,75 @@
+{#
+  ─────────────── Alerta de respuesta incorrecta ───────────────
+  Se incluye desde base.html SOLO cuando take_wrong(ch.id) confirma que el
+  servidor acaba de rechazar la bandera de este reto (submit_flag la anota en
+  la sesión y se consume aquí una vez). No toca puntos, tiempo ni progreso: la
+  única penalización es la que ya existía (+detección por bandera incorrecta).
+
+  Distinta del aviso de pistas (hint-popup.js / popup_pista_oso.png): otra
+  ilustración (Osito, recorte de game_over_osos.png), otro sonido
+  (RFAudio.wrong → gruñido corto de oso_enojado.mp3) y otras clases (.grr).
+
+  Sin JavaScript también se cierra: el botón apunta a #grr-cerrar y el CSS
+  oculta la alerta con :target.
+#}
+<span id="grr-cerrar" class="grr-anchor"></span>
+<div class="grr" role="alertdialog" aria-modal="true" aria-labelledby="grr-title" aria-describedby="grr-desc" data-grr>
+  <div class="grr-backdrop" data-grr-close></div>
+  <div class="grr-card">
+    <div class="grr-bear">
+      <img src="{{ url_for('static', filename='img/alerta_osito.webp') }}"
+           alt="Osito, con el ceño fruncido y cara de disgusto" width="240" height="240" decoding="async">
+      <span class="grr-puff grr-puff--l" aria-hidden="true"></span>
+      <span class="grr-puff grr-puff--r" aria-hidden="true"></span>
+    </div>
+    <h2 class="grr-title" id="grr-title"><span class="grr-grr">¡GRRR!</span> ESA NO ES LA RESPUESTA CORRECTA</h2>
+    <p class="grr-sub" id="grr-desc">Inténtalo nuevamente. ¡Todavía puedes conseguirlo!</p>
+    <a class="grr-btn" href="#grr-cerrar" data-grr-close>
+      <img src="{{ url_for('static', filename='img/icons/paw.svg') }}" alt="" width="22" height="22">
+      Volver al desafío
+    </a>
+  </div>
+</div>
+<script>
+(function () {
+  var box = document.querySelector('[data-grr]');
+  if (!box) return;
+  var btn = box.querySelector('.grr-btn');
+  var closed = false;
+
+  // Campo de la huella de este reto (flag_form en _macros.html)
+  function field() {
+    return document.querySelector('form[action$="/submit_flag"] input[name="flag"]');
+  }
+  function close(e) {
+    if (e) e.preventDefault();
+    if (closed) return;
+    closed = true;
+    box.classList.add('is-leaving');
+    var done = function () {
+      box.hidden = true;
+      document.documentElement.classList.remove('grr-lock');
+      var f = field();
+      if (f) {
+        try { f.focus({ preventScroll: true }); } catch (err) { f.focus(); }
+        if (f.scrollIntoView) f.scrollIntoView({ block: 'center' });
+      }
+    };
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    setTimeout(done, reduce ? 0 : 220);
+  }
+
+  document.documentElement.classList.add('grr-lock');
+  Array.prototype.forEach.call(box.querySelectorAll('[data-grr-close]'), function (el) {
+    el.addEventListener('click', close);
+  });
+  document.addEventListener('keydown', function (e) {
+    if (!closed && e.key === 'Escape') close(e);
+    if (!closed && e.key === 'Tab') { e.preventDefault(); btn.focus(); }   // el foco no sale de la alerta
+  });
+  btn.focus({ preventScroll: true });
+
+  // Gruñido corto (respeta el interruptor de sonido de Ajustes)
+  if (window.RFAudio && window.RFAudio.wrong) window.RFAudio.wrong();
+})();
+</script>

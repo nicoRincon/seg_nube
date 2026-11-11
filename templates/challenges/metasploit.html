@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% from '_macros.html' import challenge_header, briefing, hints, flag_form, detect_bar, nav_buttons %}
+{% from '_reward_card.html' import reward_slot %}
 {% block title %}Mamá Osa Despierta — RicitosFlow{% endblock %}
 
 {% block content %}
@@ -33,4 +34,6 @@ $ cat /home/msfadmin/mama_osa.flag</div>
 
   {{ nav_buttons(ch) }}
 </div>
+{# Recompensa: frente genérico (este reto no usa el libro) #}
+{{ reward_slot(ch.id) }}
 {% endblock %}

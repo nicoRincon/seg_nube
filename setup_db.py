@@ -106,6 +106,20 @@ CREATE TABLE IF NOT EXISTS hint_unlocks (
     UNIQUE(username, hint_key)
 )
 """)
+
+# Colección de piezas de la historieta (app.py también la crea si falta).
+# placed_at: reservado para el minijuego del rompecabezas.
+db.execute("""
+CREATE TABLE IF NOT EXISTS puzzle_pieces (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    username    TEXT    NOT NULL,
+    challenge   TEXT    NOT NULL,
+    piece       INTEGER NOT NULL,
+    unlocked_at REAL    NOT NULL,
+    placed_at   REAL,
+    UNIQUE(username, challenge)
+)
+""")
 db.commit()
 
 def sha(p):

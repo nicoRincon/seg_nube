@@ -18,6 +18,7 @@
     huella y pistas (los macros de _macros.html, sin cambios).
 #}
 {% from '_macros.html' import briefing, hints, flag_form, detect_bar, nav_buttons %}
+{% from '_reward_card.html' import reward_slot %}
 
 {% macro storybook(ch, art=None, art_alt='', tale='') %}
 <article class="storybook storybook--{{ ch.id }}" aria-labelledby="sbn-title">
@@ -81,4 +82,7 @@
     <div class="sbn-zone sbn-zone--nav">{{ nav_buttons(ch) }}</div>
   </div>
 </article>
+
+{# Recompensa: solo si el servidor confirma una pieza recién desbloqueada en este reto #}
+{{ reward_slot(ch.id, front=art, front_alt=art_alt) }}
 {% endmacro %}

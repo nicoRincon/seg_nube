@@ -44,7 +44,9 @@
               <span class="h-title">Pista {{ loop.index }}: {{ ch.name }}</span>
               <span class="penalty">−{{ cost_min }} MIN / −{{ cost_pts }} PTS</span>
             </div>
-            <form method="POST"
+            {# data-rf-hint: hint-popup.js pide confirmación, evita el doble envío
+               y, al confirmar, rf-audio.js reproduce el oso #}
+            <form method="POST" data-rf-hint
                   action="{{ url_for('unlock_hint', cid=ch.id, n=loop.index0) }}"
                   style="margin-top:0.7rem;">
               <button class="btn btn-cyan" type="submit">Desbloquear pista</button>
@@ -54,6 +56,25 @@
       {% endfor %}
     </div>
   </div>
+
+  {# Confirmación de pista (static/js/hint-popup.js). Fondo: img/popup_pista_oso.png;
+     los textos y los botones son HTML real colocados sobre las zonas de la imagen. #}
+  {% if unlocked|length < ch.hints|length %}
+  <dialog class="bear-pop" id="bear-pop" aria-labelledby="bear-pop-title" aria-describedby="bear-pop-msg bear-pop-costs bear-pop-ask">
+    <div class="bear-pop-card">
+      <div class="bp-art" aria-hidden="true"></div>
+      <h2 class="bp-title" id="bear-pop-title">¡GRRR! ¿NECESITAS UNA PISTA?</h2>
+      <p class="bp-msg" id="bear-pop-msg">El oso no está muy contento con que quieras ayuda...</p>
+      <ul class="bp-costs" id="bear-pop-costs" aria-label="Penalizaciones">
+        <li class="bp-cost bp-cost-time"><b>{{ cost_min }} minutos</b> <span>menos de tiempo.</span></li>
+        <li class="bp-cost bp-cost-pts"><b>{{ cost_pts }} puntos</b> <span>menos.</span></li>
+      </ul>
+      <p class="bp-ask" id="bear-pop-ask">¿Estás seguro de que quieres recibir una pista?</p>
+      <button type="button" class="bp-btn bp-no" data-bp-cancel autofocus>NO, SEGUIRÉ INTENTANDO</button>
+      <button type="button" class="bp-btn bp-yes" data-bp-confirm>SÍ, NECESITO UNA PISTA</button>
+    </div>
+  </dialog>
+  {% endif %}
 {% endmacro %}
 
 

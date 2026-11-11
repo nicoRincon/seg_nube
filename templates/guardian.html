@@ -130,7 +130,16 @@
           </div>
         </div>
         <p class="gd-note">Este sello confirma el prólogo y no suma puntos.</p>
-        <form method="POST" action="{{ url_for('start') }}">
+        {#
+          Entrada al bosque (script al final de esta página): al enviar este
+          formulario se reproduce video/transicion_cernicalo.mp4 completo y con
+          su audio (sin puerta_vieja.mp3); al terminar suenan el efecto
+          hadas_medio_3-5s.mp3 (RFAudio.forestFx) y bosque_medio_12s.mp3
+          (RFAudio.forestIntro), que el mapa continúa, y tras un fundido de
+          0,3 s se envía.
+          Sin JavaScript el formulario se envía directamente, como antes.
+        #}
+        <form method="POST" action="{{ url_for('start') }}" data-gd-enter>
           <button class="login-start gd-enter" type="submit">
             <span>Entrar al bosque y abrir el mapa</span><span aria-hidden="true">➜</span>
           </button>
@@ -150,6 +159,124 @@
   var result = document.querySelector('.gd-bottom[data-scroll]');
   if (result && result.scrollIntoView) {
     result.scrollIntoView({ block: 'center' });   // instantáneo: la página ya carga en el resultado
+  }
+
+  // ── Entrada al bosque: video (con su audio) → efecto mágico → mapa ──
+  // Sin puerta_vieja.mp3: el video ya trae su propio sonido. Al terminar suenan
+  // hadas_medio_3-5s.mp3 y la música del bosque; ambos los continúa el mapa
+  // (rf-audio.js guarda su posición al salir de la página).
+  var enter = document.querySelector('form[data-gd-enter]');
+  if (enter) {
+    var going = false;
+    var VIDEO_SRC = "{{ url_for('static', filename='video/transicion_cernicalo.mp4') }}";
+    var OUT  = reduce ? 150 : 300;                // ms del fundido breve hacia el mapa
+    var STALL = 20000;                            // ms sin avanzar el video = red caída: se continúa
+
+    // Precarga: video y mapa listos antes del clic
+    var vid = document.createElement('video');
+    vid.className = 'gd-trans-video';
+    vid.preload = 'auto';
+    vid.playsInline = true;
+    vid.setAttribute('playsinline', '');          // iOS: sin pantalla completa forzada
+    vid.setAttribute('webkit-playsinline', '');
+    vid.disablePictureInPicture = true;
+    vid.controls = false;
+    vid.src = VIDEO_SRC;
+    var forestImg = new Image();                  // el mapa aparece sin esperar su fondo
+    forestImg.src = "{{ url_for('static', filename='img/mapa_bosque.png') }}";
+
+    var layer = null, timers = [], watchdog = null, done = false, sent = false;
+    function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
+    function clearTimers() { timers.forEach(clearTimeout); timers = []; clearTimeout(watchdog); watchdog = null; }
+    function soundOn() { return !window.RFSound || window.RFSound.enabled(); }
+    function go() { if (sent) return; sent = true; enter.submit(); }
+
+    // Fin del video: efecto mágico + música del bosque, fundido breve y al mapa
+    function finish() {
+      if (done || !layer) return;
+      done = true;
+      clearTimeout(watchdog);
+      var audio = window.RFAudio;
+      if (audio && audio.forestFx) audio.forestFx();
+      if (audio && audio.forestIntro) audio.forestIntro(1.5);
+      layer.classList.add('is-out');
+      later(go, OUT);
+    }
+    function armWatchdog() {
+      clearTimeout(watchdog);
+      if (!done) watchdog = setTimeout(finish, STALL);
+    }
+
+    // play() dentro del gesto del jugador. Si el navegador lo bloquea igualmente,
+    // no se silencia ni se sustituye: se pide un toque para reproducirlo con sonido.
+    function startVideo() {
+      if (!layer || done) return;
+      layer.classList.remove('is-blocked');
+      if (window.RFAudio && window.RFAudio.prime) { window.RFAudio.prime('forest'); window.RFAudio.prime('fairy'); }
+      var p;
+      try { p = vid.play(); } catch (err) { p = Promise.reject(err); }
+      Promise.resolve(p).then(armWatchdog, function (err) {
+        if (!layer || done) return;
+        if (err && err.name === 'NotAllowedError') {
+          layer.classList.add('is-blocked');
+          var b = layer.querySelector('.gd-trans-play');
+          if (b) b.focus();
+        } else if (!(err && err.name === 'AbortError')) {
+          finish();                               // el video no se puede reproducir: se sigue a la puerta abierta
+        }
+      });
+    }
+
+    vid.addEventListener('ended', finish);
+    vid.addEventListener('error', function () { if (layer) finish(); });
+    vid.addEventListener('timeupdate', function () { if (layer && !done) armWatchdog(); });
+
+    enter.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (going) return;                          // doble clic
+      going = true;
+      var btn = enter.querySelector('button');
+      if (btn) { btn.disabled = true; btn.setAttribute('aria-busy', 'true'); }
+
+      layer = document.createElement('div');
+      layer.className = 'gd-trans' + (reduce ? ' is-reduced' : '');
+      layer.setAttribute('role', 'dialog');
+      layer.setAttribute('aria-modal', 'true');
+      layer.setAttribute('aria-label', 'Entrada al bosque');
+      layer.innerHTML =
+        '<div class="gd-trans-backdrop" aria-hidden="true"></div>' +
+        '<div class="gd-trans-frame"></div>' +
+        '<button type="button" class="gd-trans-play">' +
+          '<span aria-hidden="true">▶</span><span>Ver la entrada al bosque</span></button>';
+      layer.querySelector('.gd-trans-frame').appendChild(vid);
+      layer.querySelector('.gd-trans-play').addEventListener('click', startVideo);
+      document.body.appendChild(layer);
+      document.documentElement.classList.add('gd-trans-lock');
+
+      // Audio original del video; solo se silencia si el jugador desactivó el sonido del juego
+      vid.muted = !soundOn();
+      done = false; sent = false;
+      try { if (vid.currentTime) vid.currentTime = 0; } catch (err) {}
+      startVideo();                               // el clic autoriza el video con sonido
+
+      void layer.offsetWidth;                     // aplica el estado inicial antes del fundido
+      layer.classList.add('is-on');
+    });
+
+    // Volver con «atrás» (bfcache): se cierra la transición y se puede repetir
+    window.addEventListener('pageshow', function (e) {
+      if (!e.persisted) return;
+      clearTimers();
+      try { vid.pause(); vid.currentTime = 0; } catch (err) {}
+      var old = document.querySelector('.gd-trans');
+      if (old) old.remove();
+      layer = null; done = false; sent = false;
+      document.documentElement.classList.remove('gd-trans-lock');
+      var b = enter.querySelector('button');
+      if (b) { b.disabled = false; b.removeAttribute('aria-busy'); }
+      going = false;
+      if (window.RFAudio) { window.RFAudio.stop('forest', 0.3); window.RFAudio.stop('fairy', 0.2); }
+    });
   }
 
   // Luciérnagas: pocas partículas con transform/opacity; sin eventos de puntero
